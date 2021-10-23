@@ -1,0 +1,55 @@
+fail_fast: true
+default_stages: [commit]
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.4.0
+  hooks:
+    - id: check-case-conflict
+    - id: check-merge-conflict
+    - id: debug-statements
+    - id: detect-private-key
+    - id: check-yaml
+    - id: detect-private-key
+    - id: double-quote-string-fixer
+    - id: fix-byte-order-marker
+
+- repo: local
+  hooks:
+  - id: isort
+    name: Reorder Python Imports
+    entry: isort
+    language: python
+    types: [python]
+    pass_filenames: true
+  - id: prospector
+    name: Prospector Hooks
+    entry: prospector --messages-only
+    language: python
+    types: [python]
+    pass_filenames: true
+  # - id: run-tests
+  #   name: Run tests
+  #   entry: venv/bin/python manage.py test --keepdb
+  #   language: python_venv
+  #   always_run: true
+  #   stages: [push]
+  #   pass_filenames: false
+
+- repo: https://github.com/openstack/bashate
+  rev: 0.6.0
+  hooks:
+  - id: bashate
+    name: Bash Linter
+    description: This hook runs bashate for linting shell scripts
+    entry: bashate -i E006
+    language: python
+    types: [shell]
+    verbose: false
+
+# - repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
+#   rev: v0.1.0
+#   hooks:
+#   - id: dockerfilelint
+#     name: Docker Linter
+#     stages: [commit]

@@ -1,0 +1,46 @@
+output-format: text
+
+strictness: veryhigh
+test-warnings: true
+doc-warnings: true
+member-warnings: true
+
+pep8:
+  full: true
+  disable:
+    - D100
+    - D101
+    - D102
+    - D103
+    - D105
+    - D205
+    - D400
+  options:
+    max-line-length: 100
+
+pyflakes:
+  disable:
+    - F999
+
+pylint:
+  disable:
+    - invalid-name
+    - no-self-use
+    - wrong-import-order
+  options:
+    max-line-length: 100
+
+mccabe:
+  disable:
+  - MC0001
+
+dodgy:
+  run: true
+
+ignore-paths:
+  - venv
+  - env
+
+ignore-patterns:
+  - .+/venv/.+
+  - .+/env/.+

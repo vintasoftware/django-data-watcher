@@ -2,8 +2,11 @@ output-format: text
 
 strictness: veryhigh
 test-warnings: true
-doc-warnings: true
+doc-warnings: false
 member-warnings: true
+
+use:
+  - django
 
 pep8:
   full: true
@@ -27,6 +30,8 @@ pylint:
     - invalid-name
     - no-self-use
     - wrong-import-order
+    - unsubscriptable-object
+    - too-few-public-methods
   options:
     max-line-length: 100
 

@@ -9,7 +9,7 @@ of data operations in your django models.
 - Have visibility
 - Acts always on querysets, avoinding bottlenecks
 
-## Features
+## Roadmap
 
 - [x] Override save for models
 - [x] Limit the number of functions on watcher eg. instead of save, _save and watched_save have only _save and _watched_save or maybe just one of those

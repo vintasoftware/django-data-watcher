@@ -2,12 +2,16 @@
 ## _Django models/data operations observer_
 
 
-Django Data Watcher is a library that will make easier to create/mantain side-effects
-of data operations in your django models.
+Django Data Watcher is a library that will make easier to create/mantain side-effects of data operations in your django models.
 
 - Write once
 - Have visibility
 - Acts always on querysets, avoinding bottlenecks
+
+## Requirements
+
+- Poetry [(installation)](https://python-poetry.org/docs/#installation)
+- Python 3.6.8
 
 ## Roadmap
 
@@ -17,7 +21,8 @@ of data operations in your django models.
 - [x] Delete and Create Mixins
 - [x] Update and Save Mixins
 - [x] Take a look into _default_manager and _base_manager (Create specific test cases)
-- [ ] Packaging
+- [x] Packaging
+  - [ ] Poetry configuration vscode
 - [ ] Test
 - [x] Remove return from save operations
 - [ ] Limit the watched operations? (only delete, create, update, save)

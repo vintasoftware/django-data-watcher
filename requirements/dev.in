@@ -1,6 +1,0 @@
-black
-mypy
-pip-tools
-pre-commit
-prospector==1.2
-pytest

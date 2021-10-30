@@ -1,15 +1,13 @@
 checkvenv:
 	./scripts/check_venv.sh
 
-compile: checkvenv
-	pip-compile --allow-unsafe -o requirements/dev.txt requirements/dev.in
-	pip-compile -o requirements/base.txt requirements/base.in
+update: checkvenv
+	poetry update
 
 install: checkvenv
-	pip-sync requirements/base.txt requirements/dev.txt
+	poetry install
 
 setupvenv: checkvenv
-	pip install pip-tools
 	make install
-	pre-commit install
-	pre-commit install --hook-type pre-push
+	poetry run pre-commit install
+	poetry run pre-commit install --hook-type pre-push

@@ -2,7 +2,7 @@
 
 PYTHON_PATH=$(which python)
 echo "Checking for venv..."
-if [[ $PYTHON_PATH == *"env/"* ]]; then
+if [[ $PYTHON_PATH == *"virtualenvs/"* ]]; then
     echo "Virtual env is running, apparently"
 else
     echo "Your virtual env is not running, you should run it."

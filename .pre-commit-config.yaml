@@ -16,6 +16,13 @@ repos:
 
 - repo: local
   hooks:
+  - id: black
+    name: black
+    entry: black
+    args: [--line-length=100, --skip-string-normalization]
+    language: python
+    types: [python]
+    pass_filenames: true
   - id: isort
     name: Reorder Python Imports
     entry: isort

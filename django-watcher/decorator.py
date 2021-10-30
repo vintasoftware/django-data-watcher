@@ -1,6 +1,6 @@
 # pylint: disable=protected-access
 
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, List, Type, Union
 
 from django.db import models
 
@@ -60,6 +60,16 @@ def _clone_queryset_in_new_cls(queryset: models.QuerySet, queryset_cls: type) ->
     return c
 
 
+def _generate_settable_for_cls(qs_cls: Type[models.QuerySet]) -> Callable:
+    return lambda operation: setattr(
+        qs_cls,
+        operation,
+        lambda self, *args, **kwargs: self.model.watched_operation(
+            operation, self, *args, **kwargs
+        ),
+    )
+
+
 def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[str]) -> type:
     manager_cls = manager.__class__
     qs = manager.get_queryset()
@@ -78,15 +88,9 @@ def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[s
             func if func.__name__ != 'create' else _unwatched_create,
         )
 
-    # TODO: Fix cell-var-from-loop
+    settable = _generate_settable_for_cls(qs_cls)
     for operation in watched_operations:
-        setattr(
-            qs_cls,
-            operation,
-            lambda self, *args, **kwargs: self.model.watched_operation(
-                operation, self, *args, **kwargs  # noqa
-            ),
-        )
+        settable(operation)
 
     new_qs_instance = _clone_queryset_in_new_cls(qs, qs_cls)
 

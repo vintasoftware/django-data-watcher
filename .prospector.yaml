@@ -5,7 +5,7 @@ test-warnings: true
 doc-warnings: false
 member-warnings: true
 
-use:
+uses:
   - django
 
 pep8:
@@ -40,6 +40,9 @@ mccabe:
   - MC0001
 
 dodgy:
+  run: true
+
+mypy:
   run: true
 
 ignore-paths:

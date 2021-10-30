@@ -1,5 +1,6 @@
+black
+mypy
 pip-tools
-pytest
 pre-commit
 prospector==1.2
-black
+pytest

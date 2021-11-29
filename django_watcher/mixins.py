@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Tuple, Type, Union
 
 from django.db import models
 
-from watcher import BaseDataWatcher, T, TargetType
+from .watcher import BaseDataWatcher, T, TargetType
 
 
 class DeleteWatcherMixin(BaseDataWatcher):

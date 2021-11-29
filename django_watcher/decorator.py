@@ -4,7 +4,7 @@ from typing import Any, Callable, List, Type, Union
 
 from django.db import models
 
-from watcher import BaseDataWatcher, T, TargetType
+from .watcher import BaseDataWatcher, T, TargetType
 
 
 def _get_watched_functions(cls: type, operation_names: List[str]) -> List[callable]:
@@ -135,7 +135,9 @@ def _set_watched_model(
 
 
 def watched(
-    watcher: str, watched_operations: List[str], watched_managers: List[str] = None
+    watcher: Union[str, BaseDataWatcher],
+    watched_operations: List[str],
+    watched_managers: List[str] = None,
 ) -> Callable:
     def decorator(cls: type) -> type:
         model = _set_watched_model(cls, watcher, watched_operations)

@@ -16,6 +16,19 @@ mypy = "^0.910"
 pre-commit = "^2.15.0"
 prospector = "1.2"
 pytest = "^6.2.5"
+Faker = "^9.9.0"
+pytest-django = "^4.5.1"
+pytest-cov = "^3.0.0"
+
+[tool.pytest.ini_options]
+addopts = "--tb=short --strict-markers -ra"
+
+[tool.coverage.run]
+source = ["."]
+include = ["django_watcher/*"]
+
+[tool.coverage.report]
+include = ["django_watcher/*"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

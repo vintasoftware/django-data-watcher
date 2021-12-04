@@ -4,7 +4,7 @@ from typing import Any, Callable, List, Type, Union
 
 from django.db import models
 
-from .watcher import BaseDataWatcher, T, TargetType
+from .abstract_watcher import AbstractWatcher, T, TargetType
 
 
 def _get_watched_functions(cls: type, operation_names: List[str]) -> List[callable]:
@@ -27,7 +27,7 @@ def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kw
     return cls._watcher.run(operation, target, *args, **kwargs)
 
 
-def _import_watcher(casual_path: str) -> BaseDataWatcher:
+def _import_watcher(casual_path: str) -> AbstractWatcher:
     path = casual_path.split('.')
     if len(path) < 2:
         raise ValueError('Watcher casual path is expected to have at least base_module.Watcher')
@@ -106,7 +106,7 @@ def _set_watched_manager(model: type, manager_attr: str, watched_operations: Lis
 
 
 def _set_watched_model(
-    cls: type, watcher: Union[str, BaseDataWatcher], watched_operations: List[str]
+    cls: type, watcher: Union[str, AbstractWatcher], watched_operations: List[str]
 ) -> type:
     watched_operations = watched_operations.copy()
     if 'create' in watched_operations:
@@ -135,7 +135,7 @@ def _set_watched_model(
 
 
 def watched(
-    watcher: Union[str, BaseDataWatcher],
+    watcher: Union[str, AbstractWatcher],
     watched_operations: List[str],
     watched_managers: List[str] = None,
 ) -> Callable:

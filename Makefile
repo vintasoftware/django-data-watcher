@@ -1,16 +1,13 @@
 ARG := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
-checkvenv:
-	./scripts/check_venv.sh
 
-update: checkvenv
+update:
 	poetry update
 
-install: checkvenv
+install:
 	poetry install
 
-setupvenv: checkvenv
-	make install
+setupvenv: install
 	poetry run pre-commit install
 	poetry run pre-commit install --hook-type pre-push
 
@@ -20,3 +17,6 @@ setup_test_pypi:
 
 publish_test:
 	poetry publish --build -r test-pypi
+
+test:
+	poetry run python -- runtests.py --coverage $(ARG)

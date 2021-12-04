@@ -4,11 +4,11 @@ from typing import Any, Callable, Type, TypeVar, Union
 from django.db import models, transaction
 
 
-T = TypeVar('T', models.Model)
+T = TypeVar('T', bound=models.Model)
 TargetType = Union[Type[T], models.QuerySet]
 
 
-class BaseDataWatcher:
+class AbstractWatcher:
     class Meta:
         abstract = True
 
@@ -19,7 +19,7 @@ class BaseDataWatcher:
     @classmethod
     def to_queryset(cls, target: TargetType) -> models.QuerySet:
         if not cls.is_queryset(target):
-            target = target.objects.filter(pk=target.pk)
+            target = target.__class__.objects.filter(pk=target.pk)
 
         return target
 

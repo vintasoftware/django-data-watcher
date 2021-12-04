@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Tuple, Type, Union
 
 from django.db import models
 
-from .watcher import BaseDataWatcher, T, TargetType
+from .abstract_watcher import AbstractWatcher, T, TargetType
 
 
-class DeleteWatcherMixin(BaseDataWatcher):
+class DeleteWatcherMixin(AbstractWatcher):
     @classmethod
     def pre_delete(cls, target: models.QuerySet) -> None:
         pass
@@ -27,7 +27,7 @@ class DeleteWatcherMixin(BaseDataWatcher):
         return cls._run_inside_transaction(cls._watched_delete, target, *args, **kwargs)
 
 
-class CreateWatcherMixin(BaseDataWatcher):
+class CreateWatcherMixin(AbstractWatcher):
     @classmethod
     def pre_create(cls, target: List[T]) -> None:
         pass
@@ -66,7 +66,7 @@ class CreateWatcherMixin(BaseDataWatcher):
             target.UNWATCHED_save(**kwargs)
 
 
-class UpdateWatcherMixin(BaseDataWatcher):
+class UpdateWatcherMixin(AbstractWatcher):
     """
     UpdateWatcherMixin is DataWatcher for update operations
     Implement the methods you need choosing one or more of the followings

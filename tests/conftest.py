@@ -1,10 +1,9 @@
 import django
+from django.conf import settings
 
 
 def pytest_configure(*args):
     # pylint: disable=unused-argument
-    from django.conf import settings  # noqa
-
     settings.configure(
         DEBUG_PROPAGATE_EXCEPTIONS=True,
         DATABASES={
@@ -13,7 +12,6 @@ def pytest_configure(*args):
         },
         SITE_ID=1,
         SECRET_KEY='not very secret in tests',
-        USE_I18N=True,
         STATIC_URL='/static/',
         ROOT_URLCONF='tests.urls',
         TEMPLATES=[

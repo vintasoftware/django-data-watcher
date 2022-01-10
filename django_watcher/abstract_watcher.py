@@ -24,13 +24,11 @@ class AbstractWatcher:
         return target
 
     @classmethod
+    @transaction.atomic(durable=True)
     def _run_inside_transaction(
         cls, func: Callable, target: TargetType, *args: Any, **kwargs: Any
     ) -> Any:
-        if transaction.get_connection().in_atomic_block:
-            return func(target, *args, **kwargs)
-        with transaction.atomic():
-            return func(target, *args, **kwargs)
+        return func(target, *args, **kwargs)
 
     @classmethod
     def run(cls, operation: str, target: TargetType, *args: Any, **kwargs: Any):

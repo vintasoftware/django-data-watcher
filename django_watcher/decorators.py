@@ -7,6 +7,14 @@ from django.db import models
 from .abstract_watcher import AbstractWatcher, T, TargetType
 
 
+class _Manager(type):
+    pass
+
+
+class _QuerySet(type):
+    pass
+
+
 def _get_watched_functions(cls: type, operation_names: List[str]) -> List[callable]:
     operation_names_copy = operation_names.copy()
     watched_functions = []
@@ -70,10 +78,30 @@ def _generate_settable_for_cls(qs_cls: Type[models.QuerySet]) -> Callable:
     )
 
 
-def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[str]) -> type:
+def _get_manager_cls(manager: models.Manager) -> Type[models.Manager]:
     manager_cls = manager.__class__
-    qs = manager.get_queryset()
+
+    if 'django.db.models.manager.Manager' not in str(manager_cls):
+        return manager_cls
+
+    model_name = manager.get_queryset().model.__name__
+    return type.__new__(_Manager, f'{model_name}Manager', (manager_cls,), {})
+
+
+def _get_qs_cls(qs: models.QuerySet) -> Type[models.QuerySet]:
     qs_cls = qs.__class__
+
+    if 'django.db.models.query.QuerySet' not in str(qs_cls):
+        return qs_cls
+
+    model_name = qs.model.__name__
+    return type.__new__(_QuerySet, f'{model_name}QuerySet', (qs_cls,), {})
+
+
+def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[str]) -> type:
+    manager_cls = _get_manager_cls(manager)
+    qs = manager.get_queryset()
+    qs_cls = _get_qs_cls(qs)
 
     watched_operations = watched_operations.copy()
     if 'save' in watched_operations:

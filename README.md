@@ -35,14 +35,20 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
 -   [x] Packaging
     -   [x] Poetry configuration vscode
-    -   [] Can Poetry install dependencies on devcontainer python (without venv). Alternatively can we set poetry venv path?
-    -   [] Make file to pass params to the commands
+    -   [ ] Can Poetry install dependencies on devcontainer python (without venv). Alternatively can we set poetry venv path?
+    -   [x] Make file to pass params to the commands
 -   [ ] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
     -   [x] test abstract_watcher
-    -   [] test decorators
-    -   [] test mixins
+    -   [ ] test decorators
+    -   [ ] test mixins
+        -   [x] Create
+        -   [ ] Delete
+        -   [ ] Update
+        -   [ ] Save
+        -   [ ] Create, Delete and Save
+    -   [ ] Relational Testing (A model hook call another model with has hooks)
 -   [x] Remove return from save operations
 -   [ ] Limit the watched operations? (only delete, create, update, save)
 -   [ ] Model.objects.create() calls instance.save().

@@ -18,5 +18,8 @@ setup_test_pypi:
 publish_test:
 	poetry publish --build -r test-pypi
 
+test_nocov:
+	poetry run pytest
+
 test:
-	poetry run python -- runtests.py --coverage $(ARG)
+	poetry run python -- runtests.py --coverage -s $(ARG)

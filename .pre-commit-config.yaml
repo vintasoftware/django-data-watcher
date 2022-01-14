@@ -35,13 +35,13 @@ repos:
         language: python
         types: [python]
         pass_filenames: true
-    # - id: run-tests
-    #   name: Run tests
-    #   entry: venv/bin/python manage.py test --keepdb
-    #   language: python_venv
-    #   always_run: true
-    #   stages: [push]
-    #   pass_filenames: false
+      # - id: run-tests
+      #   name: Run tests
+      #   entry: poetry run python -- runtests.py
+      #   language: python
+      #   always_run: true
+      #   stages: [push]
+      #   pass_filenames: false
 
   - repo: https://github.com/openstack/bashate
     rev: 0.6.0

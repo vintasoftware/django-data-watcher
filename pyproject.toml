@@ -1,14 +1,13 @@
 [tool.poetry]
 name = "django-watcher"
-version = "0.1.1"
+version = "0.1.4"
 description = "Django Data Watcher is a library that will make easier to create/mantain side-effects of data operations in your django models."
 authors = ["Vinta Software"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "3.6.8"
-Django = "^3.0"
-django-stubs = "^1.9.0"
+python = "^3.6.8"
+Django = "^3.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
@@ -21,7 +20,7 @@ pytest-django = "^4.5.1"
 pytest-cov = "^3.0.0"
 
 [tool.pytest.ini_options]
-addopts = "--tb=short --strict-markers -ra"
+addopts = "--tb=short --strict-markers -ra --reuse-db"
 
 [tool.coverage.run]
 source = ["."]

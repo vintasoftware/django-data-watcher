@@ -12,7 +12,6 @@ setupvenv: install
 	poetry run pre-commit install --hook-type pre-push
 
 setup_test_pypi:
-	poetry config repositories.test-pypi https://test.pypi.org/legacy/
 	poetry config pypi-token.test-pypi $(ARG)
 
 publish_test:

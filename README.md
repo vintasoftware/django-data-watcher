@@ -35,7 +35,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
 -   [x] Packaging
     -   [x] Poetry configuration vscode
-    -   [ ] Can Poetry install dependencies on devcontainer python (without venv). Alternatively can we set poetry venv path?
+    -   [ ] Make devcontainer better works with poetry, move the venv and create a docker volume
     -   [x] Make file to pass params to the commands
 -   [ ] Test
     -   [x] Configure pytest with coverage
@@ -47,13 +47,20 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
         -   [ ] Override a single model using the same QueryTools twice
     -   [x] test mixins
         -   [x] Create
+            -   [x] Hooks Calleds
+            -   [x] Hooks Order
+            -   [x] Entire flows works for QT
+            -   [x] Entire flows works for instances
+            -   [x] Running inside transaction
         -   [x] Delete
         -   [x] Update
         -   [x] Save
         -   [x] Save and Delete Union
     -   [ ] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Model with more than 1 manager
--   [x] Remove return from save operations
+-   [ ] Implement for bulk operations on qs (bulk_create and bulk_update)
+-   [ ] Use tox
+-   [ ] Set gh actions to test and build
 -   [ ] Revisite string import for watchers
 -   [ ] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] Remove Django dependencies
@@ -63,6 +70,5 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [ ] Do we want to support possible overrides of qs.create() that don't call instance.save()?
     -   [x] queryset UNWATCHED_create needs to call UNWATCHED_save of instance
 -   [ ] Application Example also comparing with Django signals
--   [ ] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] Docs
 -   [ ] Talk

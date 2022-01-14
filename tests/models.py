@@ -55,3 +55,8 @@ class SaveModel(WatcherModel):
 @watched(watchers.StubUpdateWatcher, ['update'])
 class UpdateModel(WatcherModel):
     pass
+
+
+@watched(watchers.StubSaveDeleteWatcher, ['save', 'delete'])
+class SaveDeleteModel(WatcherModel):
+    pass

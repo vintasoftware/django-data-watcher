@@ -3,6 +3,7 @@
 FROM python:3.6.8
 ENV PYTHONUNBUFFERED 1
 RUN useradd -ms /bin/bash vscode
+RUN apt-get update && apt-get install -y vim
 
 USER vscode
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -

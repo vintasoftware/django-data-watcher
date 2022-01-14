@@ -81,21 +81,25 @@ def _generate_settable_for_cls(qs_cls: Type[models.QuerySet]) -> Callable:
 def _get_manager_cls(manager: models.Manager) -> Type[models.Manager]:
     manager_cls = manager.__class__
 
-    if 'django.db.models.manager.Manager' not in str(manager_cls):
-        return manager_cls
+    manager_name = (
+        f'{manager.get_queryset().model.__name__}Manager'
+        if 'django.db.models.manager.Manager' in str(manager_cls)
+        else manager_cls.__name__
+    )
 
-    model_name = manager.get_queryset().model.__name__
-    return type.__new__(_Manager, f'{model_name}Manager', (manager_cls,), {})
+    return type.__new__(_Manager, manager_name, (manager_cls,), {})
 
 
 def _get_qs_cls(qs: models.QuerySet) -> Type[models.QuerySet]:
     qs_cls = qs.__class__
 
-    if 'django.db.models.query.QuerySet' not in str(qs_cls):
-        return qs_cls
+    qs_name = (
+        f'{qs.model.__name__}QuerySet'
+        if 'django.db.models.query.QuerySet' in str(qs_cls)
+        else qs_cls.__name__
+    )
 
-    model_name = qs.model.__name__
-    return type.__new__(_QuerySet, f'{model_name}QuerySet', (qs_cls,), {})
+    return type.__new__(_QuerySet, qs_name, (qs_cls,), {})
 
 
 def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[str]) -> type:

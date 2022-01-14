@@ -5,28 +5,6 @@ from django.db import models
 from .abstract_watcher import AbstractWatcher, T, TargetType
 
 
-class DeleteWatcherMixin(AbstractWatcher):
-    @classmethod
-    def pre_delete(cls, target: models.QuerySet) -> None:
-        pass
-
-    @classmethod
-    def post_delete(cls, instances: List[T]) -> None:
-        pass
-
-    @classmethod
-    def _watched_delete(cls, target: TargetType, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
-        cls.pre_delete(cls.to_queryset(target))
-        instances = list(cls.to_queryset(target)) if cls.is_overriden('pos_delete') else []
-        res = target.UNWATCHED_delete(**kwargs)
-        cls.post_delete(instances)
-        return res
-
-    @classmethod
-    def _delete(cls, target: TargetType, *args: Any, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
-        return cls._run_inside_transaction(cls._watched_delete, target, *args, **kwargs)
-
-
 class CreateWatcherMixin(AbstractWatcher):
     @classmethod
     def pre_create(cls, target: List[T]) -> None:
@@ -64,6 +42,28 @@ class CreateWatcherMixin(AbstractWatcher):
             cls._run_inside_transaction(cls._watched_save, target, **kwargs)
         else:
             target.UNWATCHED_save(**kwargs)
+
+
+class DeleteWatcherMixin(AbstractWatcher):
+    @classmethod
+    def pre_delete(cls, target: models.QuerySet) -> None:
+        pass
+
+    @classmethod
+    def post_delete(cls, instances: List[T]) -> None:
+        pass
+
+    @classmethod
+    def _watched_delete(cls, target: TargetType, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
+        cls.pre_delete(cls.to_queryset(target))
+        instances = list(cls.to_queryset(target)) if cls.is_overriden('post_delete') else []
+        res = target.UNWATCHED_delete(**kwargs)
+        cls.post_delete(instances)
+        return res
+
+    @classmethod
+    def _delete(cls, target: TargetType, *args: Any, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
+        return cls._run_inside_transaction(cls._watched_delete, target, *args, **kwargs)
 
 
 class UpdateWatcherMixin(AbstractWatcher):

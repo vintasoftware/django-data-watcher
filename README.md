@@ -42,14 +42,19 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] Use Django models and querysets inside tests
     -   [x] test abstract_watcher
     -   [ ] test decorators
+        -   [ ] Override django base QueryTools (Manager and QuerySet)
+        -   [ ] Override different models using the QueryTools
+        -   [ ] Override a single model using the same QueryTools twice
     -   [ ] test mixins
         -   [x] Create
-        -   [ ] Delete
-        -   [ ] Update
+        -   [x] Delete
+        -   [x] Update
         -   [ ] Save
-        -   [ ] Create, Delete and Save
+        -   [ ] Delete and Save
     -   [ ] Relational Testing (A model hook call another model with has hooks)
 -   [x] Remove return from save operations
+-   [ ] Remove Django dependencies
+-   [ ] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] Limit the watched operations? (only delete, create, update, save)
 -   [ ] Model.objects.create() calls instance.save().
     -   [ ] Do we want to support possible overrides of qs.create() that don't call instance.save()?

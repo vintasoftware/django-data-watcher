@@ -60,7 +60,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [ ] Model with more than 1 manager
 -   [ ] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] Use tox
--   [ ] Set gh actions to test and build
+-   [x] Set gh actions to test and build
 -   [ ] Revisite string import for watchers
 -   [ ] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] Remove Django dependencies

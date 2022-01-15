@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-watcher"
-version = "0.1.4"
+version = "0.1.5-beta"
 description = "Django Data Watcher is a library that will make easier to create/mantain side-effects of data operations in your django models."
 authors = ["Vinta Software"]
 license = "MIT"

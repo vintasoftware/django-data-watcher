@@ -59,11 +59,12 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [ ] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Model with more than 1 manager
 -   [ ] Implement for bulk operations on qs (bulk_create and bulk_update)
--   [ ] Use tox
+-   [ ] Receive params on hooks to check modifications (Update/Save)
 -   [x] Set gh actions to test and build
 -   [ ] Revisite string import for watchers
 -   [ ] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] Remove Django dependencies
+-   [ ] Use tox? - GH actions is as good as we need?
 -   [ ] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] Limit the watched operations? (only delete, create, update, save)
 -   [ ] Model.objects.create() calls instance.save().

@@ -33,11 +33,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Delete and Create Mixins
 -   [x] Update and Save Mixins
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
--   [x] Packaging
-    -   [x] Poetry configuration vscode
-    -   [ ] Make devcontainer better works with poetry, move the venv and create a docker volume
-    -   [x] Make file to pass params to the commands
--   [ ] Test
+-   [ ] [C] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
     -   [x] test abstract_watcher
@@ -58,18 +54,24 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
         -   [x] Save and Delete Union
     -   [ ] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Model with more than 1 manager
--   [ ] Implement for bulk operations on qs (bulk_create and bulk_update)
--   [ ] Receive params on hooks to check modifications (Update/Save)
+-   [x] Packaging [C]
+    -   [x] [C] Deploy with poetry
+    -   [x] [F] Poetry configuration vscode
+    -   [ ] [F] Make devcontainer better works with poetry, move the venv and create a docker volume
 -   [x] Set gh actions to test and build
--   [ ] Revisite string import for watchers
--   [ ] Remove is_overriden func, documment what is needed to be overriden on watchers
--   [ ] Remove Django dependencies
--   [ ] Use tox? - GH actions is as good as we need?
--   [ ] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
--   [ ] Limit the watched operations? (only delete, create, update, save)
--   [ ] Model.objects.create() calls instance.save().
-    -   [ ] Do we want to support possible overrides of qs.create() that don't call instance.save()?
-    -   [x] queryset UNWATCHED_create needs to call UNWATCHED_save of instance
+-   [ ] [C] Receive params on hooks to check modifications (Update/Save)
+-   [ ] [C] Revisite string import for watchers
+-   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
+-   [ ] [D] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
+-   [ ] [C] Docs
+-   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
+-   [ ] [D] [F] Whave a way of ignoring hooks by param
+-   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
+-   [ ] [P] Remove Django dependencies
+-   [ ] [D] [F] Use tox (GH actions is as good as we need?)
+-   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
+-   [ ] [C] Model.objects.create() calls instance.save().
+    -   [ ] [D] [F] Do we want to support possible overrides of qs.create() that don't call instance.save()?
+    -   [x] [C] queryset UNWATCHED_create needs to call UNWATCHED_save of instance
 -   [ ] Application Example also comparing with Django signals
--   [ ] Docs
 -   [ ] Talk

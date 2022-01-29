@@ -1,3 +1,5 @@
+from typing import no_type_check
+
 from django.db import models
 
 from django_watcher.decorators import watched
@@ -6,6 +8,7 @@ from . import watchers
 
 
 class StubQuerySet(models.QuerySet):
+    @no_type_check
     def __eq__(self, __o: object) -> bool:
         return (
             (
@@ -24,6 +27,7 @@ class WatcherModel(models.Model):
 
     objects = models.Manager.from_queryset(StubQuerySet)()
 
+    @no_type_check
     def __eq__(self, __o: object) -> bool:
         if type(self) == type(__o) and self.id is None and __o.id is None:  # noqa
             return self.text == __o.text

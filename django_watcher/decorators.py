@@ -1,6 +1,6 @@
 # pylint: disable=protected-access
 
-from typing import Any, Callable, List, Type, Union
+from typing import Any, Callable, List, Type, Union, no_type_check
 
 from django.db import models
 
@@ -15,11 +15,11 @@ class _QuerySet(type):
     pass
 
 
-def _get_watched_functions(cls: type, operation_names: List[str]) -> List[callable]:
+def _get_watched_functions(cls: type, operation_names: List[str]) -> List[Callable]:
     operation_names_copy = operation_names.copy()
     watched_functions = []
-    for func in operation_names:
-        func = getattr(cls, func, None)
+    for func_name in operation_names:
+        func = getattr(cls, func_name, None)
         if callable(func):
             watched_functions.append(func)
             operation_names_copy.remove(func.__name__)
@@ -51,6 +51,7 @@ def _unwatched_create(self, **kwargs: Any) -> T:
     return instance
 
 
+@no_type_check
 def _clone_queryset_in_new_cls(queryset: models.QuerySet, queryset_cls: type) -> models.QuerySet:
     c = queryset_cls(
         model=queryset.model,
@@ -95,7 +96,7 @@ def _get_manager_cls(manager: models.Manager) -> Type[models.Manager]:
         else manager_cls.__name__
     )
 
-    return type.__new__(_Manager, manager_name, (manager_cls,), {})
+    return type.__new__(_Manager, manager_name, (manager_cls,), {})  # type: ignore
 
 
 def _get_qs_cls(qs: models.QuerySet) -> Type[models.QuerySet]:
@@ -107,7 +108,7 @@ def _get_qs_cls(qs: models.QuerySet) -> Type[models.QuerySet]:
         else qs_cls.__name__
     )
 
-    return type.__new__(_QuerySet, qs_name, (qs_cls,), {})
+    return type.__new__(_QuerySet, qs_name, (qs_cls,), {})  # type: ignore
 
 
 def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[str]) -> type:
@@ -146,7 +147,7 @@ def _set_watched_manager(model: type, manager_attr: str, watched_operations: Lis
 
 
 def _set_watched_model(
-    cls: type, watcher: Union[str, AbstractWatcher], watched_operations: List[str]
+    cls: type, watcher: Union[str, Type[AbstractWatcher]], watched_operations: List[str]
 ) -> type:
     watched_operations = watched_operations.copy()
     if 'create' in watched_operations:
@@ -158,11 +159,11 @@ def _set_watched_model(
         if 'save' not in watched_operations:
             watched_operations.append('save')
 
-    cls.watched_operation = classmethod(_watched_operation)
-    cls._watcher = _import_watcher(watcher) if isinstance(watcher, str) else watcher
+    setattr(cls, 'watched_operation', classmethod(_watched_operation))
+    setattr(cls, '_watcher', _import_watcher(watcher) if isinstance(watcher, str) else watcher)
 
-    for operation in _get_watched_functions(cls, watched_operations):
-        setattr(cls, f'UNWATCHED_{operation.__name__}', operation)
+    for func in _get_watched_functions(cls, watched_operations):
+        setattr(cls, f'UNWATCHED_{func.__name__}', func)
 
     settable = _generate_settable_for_model(cls)
     for operation in watched_operations:
@@ -172,7 +173,7 @@ def _set_watched_model(
 
 
 def watched(
-    watcher: Union[str, AbstractWatcher],
+    watcher: Union[str, Type[AbstractWatcher]],
     watched_operations: List[str],
     watched_managers: List[str] = None,
 ) -> Callable:

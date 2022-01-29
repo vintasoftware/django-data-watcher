@@ -1,5 +1,6 @@
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple
 
+from django_watcher.abstract_watcher import AbstractWatcher
 from django_watcher.mixins import (
     CreateWatcherMixin,
     DeleteWatcherMixin,
@@ -8,9 +9,9 @@ from django_watcher.mixins import (
 )
 
 
-class WatchInspector:
+class WatchInspector(AbstractWatcher):
 
-    overriden_hooks = []
+    overriden_hooks: List[str] = []
 
     @classmethod
     def assert_hook(cls, hook, asserption, *args, **kwargs):

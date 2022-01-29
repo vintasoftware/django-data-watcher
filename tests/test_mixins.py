@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, call, patch
 
 from django.test.testcases import TestCase
 
+from django_watcher.mixins import _INSTANCE, _QUERY_SET
+
 from .models import CreateModel, DeleteModel, SaveDeleteModel, SaveModel, UpdateModel
 from .watchers import (
     StubCreateWatcher,
@@ -44,10 +46,16 @@ class CreateMixinTests(TestCase):
         instance.save()
 
         StubCreateWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [CreateModel(text='text')]
+            'pre_create',
+            'assert_called_once_with',
+            [CreateModel(text='text')],
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubCreateWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', CreateModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            CreateModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         self.assertEqual(6, CreateModel.objects.count())
 
@@ -55,10 +63,16 @@ class CreateMixinTests(TestCase):
         instance = CreateModel.objects.create(text='text')
 
         StubCreateWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [CreateModel(text='text')]
+            'pre_create',
+            'assert_called_once_with',
+            [CreateModel(text='text')],
+            {'source': _QUERY_SET, 'operation_params': {'text': 'text'}},
         )
         StubCreateWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', CreateModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            CreateModel.objects.filter(pk=instance.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'text'}},
         )
         self.assertEqual(6, CreateModel.objects.count())
 
@@ -70,9 +84,14 @@ class CreateMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_create([CreateModel(text='text')]),
+                call.pre_create(
+                    [CreateModel(text='text')], {'source': _INSTANCE, 'operation_params': {}}
+                ),
                 call.UNWATCHED_save(),
-                call.post_create(CreateModel.objects.filter(pk=instance.pk)),
+                call.post_create(
+                    CreateModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 3)
@@ -87,9 +106,15 @@ class CreateMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_create([CreateModel(text='text')]),
+                call.pre_create(
+                    [CreateModel(text='text')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'text'}},
+                ),
                 call.UNWATCHED_create(text='text'),
-                call.post_create(CreateModel.objects.filter(pk=instance.pk)),
+                call.post_create(
+                    CreateModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 3)
@@ -286,10 +311,16 @@ class UpdateMixinTests(TestCase):
         updated.save()
 
         StubUpdateWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', UpdateModel.objects.filter(pk=updated.pk)
+            'pre_update',
+            'assert_called_once_with',
+            UpdateModel.objects.filter(pk=updated.pk),
+            {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': updated},
         )
         StubUpdateWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', UpdateModel.objects.filter(pk=updated.pk)
+            'post_update',
+            'assert_called_once_with',
+            UpdateModel.objects.filter(pk=updated.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         updated.refresh_from_db()
         self.assertEqual('new_text', updated.text)
@@ -299,10 +330,16 @@ class UpdateMixinTests(TestCase):
         UpdateModel.objects.filter(pk=first.pk).update(text='fake')
 
         StubUpdateWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', UpdateModel.objects.filter(pk=first.pk)
+            'pre_update',
+            'assert_called_once_with',
+            UpdateModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubUpdateWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', UpdateModel.objects.filter(pk=first.pk)
+            'post_update',
+            'assert_called_once_with',
+            UpdateModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         first.refresh_from_db()
         self.assertEqual('fake', first.text)
@@ -311,10 +348,16 @@ class UpdateMixinTests(TestCase):
         UpdateModel.objects.update(text='fake')
 
         StubUpdateWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', UpdateModel.objects.all()
+            'pre_update',
+            'assert_called_once_with',
+            UpdateModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubUpdateWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', UpdateModel.objects.all()
+            'post_update',
+            'assert_called_once_with',
+            UpdateModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         self.assertEqual(5, UpdateModel.objects.filter(text='fake').count())
 
@@ -327,9 +370,15 @@ class UpdateMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_update(UpdateModel.objects.filter(pk=instance.pk)),
+                call.pre_update(
+                    UpdateModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
+                ),
                 call.UNWATCHED_save(),
-                call.post_update(UpdateModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    UpdateModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 3)
@@ -346,9 +395,15 @@ class UpdateMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_update(UpdateModel.objects.filter(pk=instance.pk)),
+                call.pre_update(
+                    UpdateModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(UpdateModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    UpdateModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 3)
@@ -366,9 +421,15 @@ class UpdateMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_update(UpdateModel.objects.filter(pk__in=pks)),
+                call.pre_update(
+                    UpdateModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(UpdateModel.objects.filter(pk__in=pks)),
+                call.post_update(
+                    UpdateModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 3)
@@ -438,15 +499,29 @@ class SaveMixinTests(TestCase):
         instance = SaveModel(text='text')
         instance.save()
 
-        StubSaveWatcher.assert_hook('pre_save', 'assert_called_once_with', [SaveModel(text='text')])
         StubSaveWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [SaveModel(text='text')]
+            'pre_save',
+            'assert_called_once_with',
+            [SaveModel(text='text')],
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'pre_create',
+            'assert_called_once_with',
+            [SaveModel(text='text')],
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
+        )
+        StubSaveWatcher.assert_hook(
+            'post_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         self.assertEqual(6, SaveModel.objects.count())
 
@@ -456,32 +531,58 @@ class SaveMixinTests(TestCase):
         instance.save()
 
         StubSaveWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'pre_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
         )
         StubSaveWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'pre_update',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
         )
         StubSaveWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'post_update',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         instance.refresh_from_db()
         self.assertEqual('new_text', instance.text)
 
     def test_create_hooks_with_objects(self):
-        instance = SaveModel.objects.create(text='text')
+        instance = SaveModel.objects.create(text='fake')
 
-        StubSaveWatcher.assert_hook('pre_save', 'assert_called_once_with', [SaveModel(text='text')])
         StubSaveWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [SaveModel(text='text')]
+            'pre_save',
+            'assert_called_once_with',
+            [SaveModel(text='fake')],
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubSaveWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'pre_create',
+            'assert_called_once_with',
+            [SaveModel(text='fake')],
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubSaveWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+        )
+        StubSaveWatcher.assert_hook(
+            'post_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=instance.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         self.assertEqual(6, SaveModel.objects.count())
 
@@ -490,16 +591,28 @@ class SaveMixinTests(TestCase):
         SaveModel.objects.filter(pk=first.pk).update(text='new_text')
 
         StubSaveWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', SaveModel.objects.filter(pk=first.pk)
+            'pre_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveModel.objects.filter(pk=first.pk)
+            'pre_update',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveModel.objects.filter(pk=first.pk)
+            'post_update',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveModel.objects.filter(pk=first.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         first.refresh_from_db()
         self.assertEqual('new_text', first.text)
@@ -507,14 +620,30 @@ class SaveMixinTests(TestCase):
     def test_update_hooks_with_multiple_objects(self):
         SaveModel.objects.update(text='new_text')
 
-        StubSaveWatcher.assert_hook('pre_save', 'assert_called_once_with', SaveModel.objects.all())
         StubSaveWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveModel.objects.all()
+            'pre_save',
+            'assert_called_once_with',
+            SaveModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveModel.objects.all()
+            'pre_update',
+            'assert_called_once_with',
+            SaveModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
-        StubSaveWatcher.assert_hook('post_save', 'assert_called_once_with', SaveModel.objects.all())
+        StubSaveWatcher.assert_hook(
+            'post_update',
+            'assert_called_once_with',
+            SaveModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+        )
+        StubSaveWatcher.assert_hook(
+            'post_save',
+            'assert_called_once_with',
+            SaveModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+        )
         self.assertEqual(5, SaveModel.objects.filter(text='new_text').count())
 
     def test_create_hooks_order_with_instance(self):
@@ -525,11 +654,23 @@ class SaveMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_save([SaveModel(text='text')]),
-                call.pre_create([SaveModel(text='text')]),
+                call.pre_save(
+                    [SaveModel(text='text')],
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
+                call.pre_create(
+                    [SaveModel(text='text')],
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
                 call.UNWATCHED_save(),
-                call.post_create(SaveModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveModel.objects.filter(pk=instance.pk)),
+                call.post_create(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
+                call.post_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -544,11 +685,23 @@ class SaveMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveModel.objects.filter(pk=instance.pk)),
-                call.pre_update(SaveModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
+                ),
+                call.pre_update(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
+                ),
                 call.UNWATCHED_save(),
-                call.post_update(SaveModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
+                call.post_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -560,15 +713,27 @@ class SaveMixinTests(TestCase):
         self.mock.UNWATCHED_create.side_effect = qs.UNWATCHED_create
         setattr(qs, 'UNWATCHED_create', self.mock.UNWATCHED_create)
         with patch.object(SaveModel.objects, 'get_queryset', lambda: qs):
-            instance = SaveModel.objects.create(text='text')
+            instance = SaveModel.objects.create(text='fake')
 
         self.mock.assert_has_calls(
             [
-                call.pre_save([SaveModel(text='text')]),
-                call.pre_create([SaveModel(text='text')]),
-                call.UNWATCHED_create(text='text'),
-                call.post_create(SaveModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    [SaveModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.pre_create(
+                    [SaveModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.UNWATCHED_create(text='fake'),
+                call.post_create(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.post_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -584,11 +749,23 @@ class SaveMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveModel.objects.filter(pk=instance.pk)),
-                call.pre_update(SaveModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.pre_update(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(SaveModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.post_save(
+                    SaveModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -606,11 +783,23 @@ class SaveMixinTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveModel.objects.filter(pk__in=pks)),
-                call.pre_update(SaveModel.objects.filter(pk__in=pks)),
+                call.pre_save(
+                    SaveModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.pre_update(
+                    SaveModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(SaveModel.objects.filter(pk__in=pks)),
-                call.post_save(SaveModel.objects.filter(pk__in=pks)),
+                call.post_update(
+                    SaveModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.post_save(
+                    SaveModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -708,16 +897,28 @@ class AllMixinsTests(TestCase):  # noqa
         instance.save()
 
         StubSaveDeleteWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', [SaveDeleteModel(text='text')]
+            'pre_save',
+            'assert_called_once_with',
+            [SaveDeleteModel(text='text')],
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [SaveDeleteModel(text='text')]
+            'pre_create',
+            'assert_called_once_with',
+            [SaveDeleteModel(text='text')],
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         self.assertEqual(6, SaveDeleteModel.objects.count())
 
@@ -727,16 +928,28 @@ class AllMixinsTests(TestCase):  # noqa
         instance.save()
 
         StubSaveDeleteWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'pre_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'pre_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _INSTANCE, 'operation_params': {}},
         )
         instance.refresh_from_db()
         self.assertEqual('new_text', instance.text)
@@ -754,19 +967,31 @@ class AllMixinsTests(TestCase):  # noqa
         self.assertEqual(4, SaveDeleteModel.objects.count())
 
     def test_create_hooks_with_objects(self):
-        instance = SaveDeleteModel.objects.create(text='text')
+        instance = SaveDeleteModel.objects.create(text='fake')
 
         StubSaveDeleteWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', [SaveDeleteModel(text='text')]
+            'pre_save',
+            'assert_called_once_with',
+            [SaveDeleteModel(text='fake')],
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'pre_create', 'assert_called_once_with', [SaveDeleteModel(text='text')]
+            'pre_create',
+            'assert_called_once_with',
+            [SaveDeleteModel(text='fake')],
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_create', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_create',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=instance.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=instance.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
         )
         self.assertEqual(6, SaveDeleteModel.objects.count())
 
@@ -795,16 +1020,28 @@ class AllMixinsTests(TestCase):  # noqa
         SaveDeleteModel.objects.filter(pk=first.pk).update(text='new_text')
 
         StubSaveDeleteWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=first.pk)
+            'pre_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=first.pk)
+            'pre_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=first.pk)
+            'post_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveDeleteModel.objects.filter(pk=first.pk)
+            'post_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.filter(pk=first.pk),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         first.refresh_from_db()
         self.assertEqual('new_text', first.text)
@@ -813,16 +1050,28 @@ class AllMixinsTests(TestCase):  # noqa
         SaveDeleteModel.objects.update(text='new_text')
 
         StubSaveDeleteWatcher.assert_hook(
-            'pre_save', 'assert_called_once_with', SaveDeleteModel.objects.all()
+            'pre_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'pre_update', 'assert_called_once_with', SaveDeleteModel.objects.all()
+            'pre_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_update', 'assert_called_once_with', SaveDeleteModel.objects.all()
+            'post_update',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         StubSaveDeleteWatcher.assert_hook(
-            'post_save', 'assert_called_once_with', SaveDeleteModel.objects.all()
+            'post_save',
+            'assert_called_once_with',
+            SaveDeleteModel.objects.all(),
+            {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
         )
         self.assertEqual(5, SaveDeleteModel.objects.filter(text='new_text').count())
 
@@ -834,11 +1083,21 @@ class AllMixinsTests(TestCase):  # noqa
 
         self.mock.assert_has_calls(
             [
-                call.pre_save([SaveDeleteModel(text='text')]),
-                call.pre_create([SaveDeleteModel(text='text')]),
+                call.pre_save(
+                    [SaveDeleteModel(text='text')], {'source': _INSTANCE, 'operation_params': {}}
+                ),
+                call.pre_create(
+                    [SaveDeleteModel(text='text')], {'source': _INSTANCE, 'operation_params': {}}
+                ),
                 call.UNWATCHED_save(),
-                call.post_create(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.post_create(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
+                call.post_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -870,11 +1129,23 @@ class AllMixinsTests(TestCase):  # noqa
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.pre_update(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
+                ),
+                call.pre_update(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}, 'unsaved_instance': instance},
+                ),
                 call.UNWATCHED_save(),
-                call.post_update(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
+                call.post_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _INSTANCE, 'operation_params': {}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -886,15 +1157,27 @@ class AllMixinsTests(TestCase):  # noqa
         self.mock.UNWATCHED_create.side_effect = qs.UNWATCHED_create
         setattr(qs, 'UNWATCHED_create', self.mock.UNWATCHED_create)
         with patch.object(SaveDeleteModel.objects, 'get_queryset', lambda: qs):
-            instance = SaveDeleteModel.objects.create(text='text')
+            instance = SaveDeleteModel.objects.create(text='fake')
 
         self.mock.assert_has_calls(
             [
-                call.pre_save([SaveDeleteModel(text='text')]),
-                call.pre_create([SaveDeleteModel(text='text')]),
-                call.UNWATCHED_create(text='text'),
-                call.post_create(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    [SaveDeleteModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.pre_create(
+                    [SaveDeleteModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.UNWATCHED_create(text='fake'),
+                call.post_create(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.post_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -952,11 +1235,23 @@ class AllMixinsTests(TestCase):  # noqa
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.pre_update(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.pre_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.pre_update(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(SaveDeleteModel.objects.filter(pk=instance.pk)),
-                call.post_save(SaveDeleteModel.objects.filter(pk=instance.pk)),
+                call.post_update(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.post_save(
+                    SaveDeleteModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)
@@ -974,11 +1269,23 @@ class AllMixinsTests(TestCase):  # noqa
 
         self.mock.assert_has_calls(
             [
-                call.pre_save(SaveDeleteModel.objects.filter(pk__in=pks)),
-                call.pre_update(SaveDeleteModel.objects.filter(pk__in=pks)),
+                call.pre_save(
+                    SaveDeleteModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.pre_update(
+                    SaveDeleteModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
                 call.UNWATCHED_update(text='new_text'),
-                call.post_update(SaveDeleteModel.objects.filter(pk__in=pks)),
-                call.post_save(SaveDeleteModel.objects.filter(pk__in=pks)),
+                call.post_update(
+                    SaveDeleteModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
+                call.post_save(
+                    SaveDeleteModel.objects.filter(pk__in=pks),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'new_text'}},
+                ),
             ]
         )
         self.assertEqual(len(self.mock.mock_calls), 5)

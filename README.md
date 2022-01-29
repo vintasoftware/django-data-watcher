@@ -33,6 +33,12 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Delete and Create Mixins
 -   [x] Update and Save Mixins
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
+-   [x] Set gh actions to test and build
+-   [x] [C] Receive params on hooks to check modifications (Update/Save)
+-   [ ] [C] Revisite string import for watchers
+-   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
+-   [ ] [D] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
+-   [ ] [C] Docs
 -   [ ] [C] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
@@ -41,29 +47,13 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
         -   [ ] Override django base QueryTools (Manager and QuerySet)
         -   [ ] Override different models using the QueryTools
         -   [ ] Override a single model using the same QueryTools twice
-    -   [x] test mixins
-        -   [x] Create
-            -   [x] Hooks Calleds
-            -   [x] Hooks Order
-            -   [x] Entire flows works for QT
-            -   [x] Entire flows works for instances
-            -   [x] Running inside transaction
-        -   [x] Delete
-        -   [x] Update
-        -   [x] Save
-        -   [x] Save and Delete Union
+    -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [ ] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Model with more than 1 manager
 -   [x] Packaging [C]
     -   [x] [C] Deploy with poetry
     -   [x] [F] Poetry configuration vscode
     -   [ ] [F] Make devcontainer better works with poetry, move the venv and create a docker volume
--   [x] Set gh actions to test and build
--   [ ] [C] Receive params on hooks to check modifications (Update/Save)
--   [ ] [C] Revisite string import for watchers
--   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
--   [ ] [D] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
--   [ ] [C] Docs
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [D] [F] Whave a way of ignoring hooks by param
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers

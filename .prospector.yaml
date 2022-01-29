@@ -37,7 +37,7 @@ pylint:
 
 mccabe:
   disable:
-  - MC0001
+    - MC0001
 
 dodgy:
   run: true

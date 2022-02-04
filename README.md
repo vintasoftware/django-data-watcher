@@ -36,9 +36,8 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Set gh actions to test and build
 -   [x] [C] Receive params on hooks to check modifications (Update/Save)
 -   [x] [C] Revisite string import for watchers
--   [ ] [D] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
--   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
--   [ ] [C] Docs
+-   [x] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
+-   [x] [C] Limit the watched operations (only delete, create, update, save)
 -   [ ] [C] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
@@ -50,11 +49,13 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [ ] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Model with more than 1 manager
+-   [ ] [C] Docs
+-   [ ] [F] Create Stubs for decorated models
+-   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [x] Packaging [C]
     -   [x] [C] Deploy with poetry
     -   [x] [F] Poetry configuration vscode
     -   [ ] [F] Make devcontainer better works with poetry, move the venv and create a docker volume
--   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [D] [F] Whave a way of ignoring hooks by param
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies

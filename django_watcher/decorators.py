@@ -1,10 +1,11 @@
 # pylint: disable=protected-access
 from importlib import import_module
-from typing import Any, Callable, List, Type, Union, no_type_check
+from typing import Any, Callable, Dict, List, Set, Tuple, Type, Union, no_type_check
 
 from django.db import models
 
 from .abstract_watcher import AbstractWatcher, T, TargetType
+from .mixins import CreateWatcherMixin, DeleteWatcherMixin, SaveWatcherMixin, UpdateWatcherMixin
 
 
 class _Manager(type):
@@ -35,7 +36,7 @@ def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kw
     return cls._watcher.run(operation, target, *args, **kwargs)
 
 
-def _import_watcher(casual_path: str) -> AbstractWatcher:
+def _import_watcher(casual_path: str) -> Type[AbstractWatcher]:
     splited_path = casual_path.split('.')
     if len(splited_path) < 2:
         raise ValueError('Watcher casual path is expected to have at least base_module.Watcher')
@@ -149,9 +150,7 @@ def _set_watched_manager(model: type, manager_attr: str, watched_operations: Lis
     setattr(model, manager_attr, manager_cls())
 
 
-def _set_watched_model(
-    cls: type, watcher: Union[str, Type[AbstractWatcher]], watched_operations: List[str]
-) -> type:
+def _set_watched_model(cls: type, watched_operations: List[str]) -> type:
     watched_operations = watched_operations.copy()
     if 'create' in watched_operations:
         watched_operations.remove('create')
@@ -163,7 +162,6 @@ def _set_watched_model(
             watched_operations.append('save')
 
     setattr(cls, 'watched_operation', classmethod(_watched_operation))
-    setattr(cls, '_watcher', _import_watcher(watcher) if isinstance(watcher, str) else watcher)
 
     for func in _get_watched_functions(cls, watched_operations):
         setattr(cls, f'UNWATCHED_{func.__name__}', func)
@@ -175,19 +173,44 @@ def _set_watched_model(
     return cls
 
 
+_map_operations_by_watcher: Dict[Type[AbstractWatcher], Tuple[str, Tuple[str, ...]]] = {
+    SaveWatcherMixin: ('save', ('create', 'update')),
+    UpdateWatcherMixin: ('save', ('update',)),
+    CreateWatcherMixin: ('save', ('create',)),
+    DeleteWatcherMixin: ('delete', ('delete',)),
+}
+
+
+def _get_watched_operations(
+    watcher: Type[AbstractWatcher],
+) -> Tuple[List[str], List[str]]:
+    model_operations: Set[str] = set()
+    objects_operations: Set[str] = set()
+    for k, v in _map_operations_by_watcher.items():
+        if issubclass(watcher, k):
+            m_operation, o_operations = v
+            model_operations.add(m_operation)
+            for operation in o_operations:
+                objects_operations.add(operation)
+
+    return list(model_operations), list(objects_operations)
+
+
 def watched(
     watcher: Union[str, Type[AbstractWatcher]],
-    watched_operations: List[str],
     watched_managers: List[str] = None,
 ) -> Callable:
     def decorator(cls: type) -> type:
-        model = _set_watched_model(cls, watcher, watched_operations)
+        watcher_cls = _import_watcher(watcher) if isinstance(watcher, str) else watcher
+        model_operations, objects_operations = _get_watched_operations(watcher_cls)
+        model = _set_watched_model(cls, model_operations)
+        setattr(model, '_watcher', watcher_cls)
 
         if not watched_managers:
-            _set_watched_manager(model, 'objects', watched_operations)
+            _set_watched_manager(model, 'objects', objects_operations)
         else:
             for manager_attr in watched_managers:
-                _set_watched_manager(model, manager_attr, watched_operations)
+                _set_watched_manager(model, manager_attr, objects_operations)
 
         return model
 

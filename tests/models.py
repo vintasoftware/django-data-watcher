@@ -41,46 +41,46 @@ class WatcherModel(models.Model):
         abstract = True
 
 
-@watched(watchers.StubCreateWatcher, ['create'])
+@watched(watchers.StubCreateWatcher)
 class CreateModel(WatcherModel):
     pass
 
 
-@watched(watchers.StubDeleteWatcher, ['delete'])
+@watched(watchers.StubDeleteWatcher)
 class DeleteModel(WatcherModel):
     pass
 
 
-@watched(watchers.StubSaveWatcher, ['save'])
+@watched(watchers.StubSaveWatcher)
 class SaveModel(WatcherModel):
     pass
 
 
-@watched(watchers.StubUpdateWatcher, ['update'])
+@watched(watchers.StubUpdateWatcher)
 class UpdateModel(WatcherModel):
     pass
 
 
-@watched(watchers.StubSaveDeleteWatcher, ['save', 'delete'])
+@watched(watchers.StubSaveDeleteWatcher)
 class SaveDeleteModel(WatcherModel):
     pass
 
 
-@watched('tests.StubCreateWatcher', ['create'])
+@watched('tests.StubCreateWatcher')
 class CasualStringWatcherModel(WatcherModel):
     pass
 
 
-@watched('tests.StubDeleteWatcher', ['delete'])
+@watched('tests.StubDeleteWatcher')
 class CasualStringWatcherModel2(WatcherModel):
     pass
 
 
-@watched('tests.watchers.StubCreateWatcher', ['create'])
+@watched('tests.watchers.StubCreateWatcher')
 class StringWatcherModel(WatcherModel):
     pass
 
 
-@watched('tests.watchers.StubDeleteWatcher', ['delete'])
+@watched('tests.watchers.StubDeleteWatcher')
 class StringWatcherModel2(WatcherModel):
     pass

@@ -1,5 +1,5 @@
 # pylint: disable=protected-access
-
+from importlib import import_module
 from typing import Any, Callable, List, Type, Union, no_type_check
 
 from django.db import models
@@ -36,13 +36,16 @@ def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kw
 
 
 def _import_watcher(casual_path: str) -> AbstractWatcher:
-    path = casual_path.split('.')
-    if len(path) < 2:
+    splited_path = casual_path.split('.')
+    if len(splited_path) < 2:
         raise ValueError('Watcher casual path is expected to have at least base_module.Watcher')
-    watcher_name = path.pop(-1)
-    module_name = path.pop(0) if len(path) == 1 else '.'.join(path)
-    module = __import__(module_name)
-    return getattr(module.data_watcher, watcher_name)
+    watcher_name = splited_path.pop(-1)
+    if len(splited_path) < 2:
+        module_name = f'{splited_path[0]}.watchers'
+    else:
+        module_name = splited_path.pop(0) if len(splited_path) == 1 else '.'.join(splited_path)
+    module = import_module(module_name)
+    return getattr(module, watcher_name)
 
 
 def _unwatched_create(self, **kwargs: Any) -> T:

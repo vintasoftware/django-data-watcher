@@ -64,3 +64,23 @@ class UpdateModel(WatcherModel):
 @watched(watchers.StubSaveDeleteWatcher, ['save', 'delete'])
 class SaveDeleteModel(WatcherModel):
     pass
+
+
+@watched('tests.StubCreateWatcher', ['create'])
+class CasualStringWatcherModel(WatcherModel):
+    pass
+
+
+@watched('tests.StubDeleteWatcher', ['delete'])
+class CasualStringWatcherModel2(WatcherModel):
+    pass
+
+
+@watched('tests.watchers.StubCreateWatcher', ['create'])
+class StringWatcherModel(WatcherModel):
+    pass
+
+
+@watched('tests.watchers.StubDeleteWatcher', ['delete'])
+class StringWatcherModel2(WatcherModel):
+    pass

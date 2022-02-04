@@ -1,13 +1,25 @@
-# from django.db import models
+from django.test import TestCase
 
-# from django_watcher.decorator import watched
-# from django_watcher.mixins import DeleteWatcherMixin
+from .models import (
+    CasualStringWatcherModel,
+    CasualStringWatcherModel2,
+    StringWatcherModel,
+    StringWatcherModel2,
+)
+from .watchers import StubCreateWatcher, StubDeleteWatcher
 
 
-# class TestSerializer:
-#     def setUp(self):
-#         @watched(watcher=DeleteWatcherMixin, watched_operations=["delete"])
-#         class ExampleModel(models.Model):
-#             char = models.CharField(max_length=255)
+class TestImportWatcher(TestCase):
+    def test_complete_path_import(self):
+        model = StringWatcherModel()
+        model2 = StringWatcherModel2()
 
-#         self.Model = ExampleModel  # noqa
+        self.assertEqual(getattr(model, '_watcher'), StubCreateWatcher)
+        self.assertEqual(getattr(model2, '_watcher'), StubDeleteWatcher)
+
+    def test_casual_path_import(self):
+        model = CasualStringWatcherModel()
+        model2 = CasualStringWatcherModel2()
+
+        self.assertEqual(getattr(model, '_watcher'), StubCreateWatcher)
+        self.assertEqual(getattr(model2, '_watcher'), StubDeleteWatcher)

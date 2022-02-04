@@ -35,9 +35,9 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
 -   [x] Set gh actions to test and build
 -   [x] [C] Receive params on hooks to check modifications (Update/Save)
--   [ ] [C] Revisite string import for watchers
--   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
+-   [x] [C] Revisite string import for watchers
 -   [ ] [D] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
+-   [ ] [D] [C] Limit the watched operations (only delete, create, update, save)
 -   [ ] [C] Docs
 -   [ ] [C] Test
     -   [x] Configure pytest with coverage

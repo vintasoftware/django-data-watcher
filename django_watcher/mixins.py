@@ -109,10 +109,12 @@ class DeleteWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def _watched_delete(cls, target: TargetDelete, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
+    def _watched_delete(
+        cls, target: TargetDelete, *args: Any, **kwargs: Any
+    ) -> Tuple[int, Dict[str, int]]:
         cls.pre_delete(cls.to_queryset(target))
         instances = list(cls.to_queryset(target)) if cls.is_overriden('post_delete') else []
-        res = target.UNWATCHED_delete(**kwargs)
+        res = target.UNWATCHED_delete(*args, **kwargs)
         cls.post_delete(instances)
         return res
 
@@ -144,15 +146,15 @@ class UpdateWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def _watched_update(cls, target: WatchedUpdateQuerySet, **kwargs) -> int:
+    def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
         cls.pre_update(target, {'source': _QUERY_SET, 'operation_params': kwargs})
-        result = target.UNWATCHED_update(**kwargs)
+        result = target.UNWATCHED_update(*args, **kwargs)
         cls.post_update(target, {'source': _QUERY_SET, 'operation_params': kwargs})
         return result
 
     @classmethod
-    def _update(cls, target: WatchedUpdateQuerySet, **kwargs) -> int:
-        return cls._run_inside_transaction(cls._watched_update, target, **kwargs)
+    def _update(cls, target: WatchedUpdateQuerySet, *update_args, **kwargs) -> int:
+        return cls._run_inside_transaction(cls._watched_update, target, *update_args, **kwargs)
 
     @classmethod
     def _watched_save(cls, target: S, **kwargs) -> None:
@@ -222,8 +224,8 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
         return instance  # type: ignore
 
     @classmethod
-    def _watched_update(cls, target: WatchedUpdateQuerySet, **kwargs) -> int:
+    def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
         cls.pre_save(target, {'source': _QUERY_SET, 'operation_params': kwargs})
-        res = super()._watched_update(target, **kwargs)
+        res = super()._watched_update(target, *args, **kwargs)
         cls.post_save(target, {'source': _QUERY_SET, 'operation_params': kwargs})
         return res

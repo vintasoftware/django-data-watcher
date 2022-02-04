@@ -5,21 +5,7 @@ from django.db import models
 from django_watcher.decorators import watched
 
 from . import watchers
-
-
-class StubQuerySet(models.QuerySet):
-    @no_type_check
-    def __eq__(self, __o: object) -> bool:
-        return (
-            (
-                self.model == __o.model
-                and self.query.chain().__str__() == __o.query.chain().__str__()
-                and self._db == __o._db
-                and self._hints == __o._hints
-            )
-            if isinstance(__o, models.QuerySet)
-            else super().__eq__(__o)
-        )
+from .managers import SpyableManager, StubQuerySet, SubSpyableManager  # type: ignore
 
 
 class WatcherModel(models.Model):
@@ -41,6 +27,7 @@ class WatcherModel(models.Model):
         abstract = True
 
 
+# region Models
 @watched(watchers.StubCreateWatcher)
 class CreateModel(WatcherModel):
     pass
@@ -66,6 +53,10 @@ class SaveDeleteModel(WatcherModel):
     pass
 
 
+# endregion
+
+
+# region testImportWatcher
 @watched('tests.StubCreateWatcher')
 class CasualStringWatcherModel(WatcherModel):
     pass
@@ -84,3 +75,20 @@ class StringWatcherModel(WatcherModel):
 @watched('tests.watchers.StubDeleteWatcher')
 class StringWatcherModel2(WatcherModel):
     pass
+
+
+# endregion
+
+
+# region testCustomQueryTools
+
+
+@watched(watchers.StubSaveDeleteWatcher, ['objects', 'other_objects'])
+class CustomManagerModel(WatcherModel):
+    objects = SpyableManager()
+    other_objects = SubSpyableManager()
+
+
+@watched(watchers.StubSaveDeleteWatcher2)
+class CustomManagerModel2(WatcherModel):
+    objects = SpyableManager()

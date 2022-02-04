@@ -1,14 +1,12 @@
 # pylint: disable=too-many-lines
-
 from copy import deepcopy
 from unittest.mock import MagicMock, call, patch
 
 from django.test.testcases import TestCase
 
 from django_watcher.mixins import _INSTANCE, _QUERY_SET
-
-from .models import CreateModel, DeleteModel, SaveDeleteModel, SaveModel, UpdateModel
-from .watchers import (
+from tests.models import CreateModel, DeleteModel, SaveDeleteModel, SaveModel, UpdateModel
+from tests.watchers import (
     StubCreateWatcher,
     StubDeleteWatcher,
     StubSaveDeleteWatcher,
@@ -16,12 +14,7 @@ from .watchers import (
     StubUpdateWatcher,
 )
 
-
-class CopyingMock(MagicMock):
-    def __call__(self, *args, **kwargs):
-        args = deepcopy(args)
-        kwargs = deepcopy(kwargs)
-        return super().__call__(*args, **kwargs)
+from .helpers import CopyingMock
 
 
 class CreateMixinTests(TestCase):

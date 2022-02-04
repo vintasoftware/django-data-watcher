@@ -15,7 +15,7 @@ class TestAbstractWatcher(TestCase):
             pass
 
         watched_operation = MagicMock()
-        MyWatcher._watched_operation = classmethod(watched_operation)  # noqa
+        setattr(MyWatcher, '_watched_operation', classmethod(watched_operation))
 
         self.Watcher = MyWatcher
         self.operation = watched_operation

@@ -52,3 +52,7 @@ class StubUpdateWatcher(WatchInspector, UpdateWatcherMixin):
 
 class StubSaveDeleteWatcher(WatchInspector, SaveWatcherMixin, DeleteWatcherMixin):
     pass
+
+
+class StubSaveDeleteWatcher2(WatchInspector, SaveWatcherMixin, DeleteWatcherMixin):
+    pass

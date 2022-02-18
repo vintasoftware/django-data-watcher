@@ -2,8 +2,6 @@ from unittest.mock import MagicMock, call, patch
 
 from django.test import TestCase
 
-import pytest
-
 from django_watcher.mixins import _QUERY_SET
 from tests.models import (
     CasualStringWatcherModel,
@@ -63,7 +61,6 @@ class CustomAndSubManagerTests(TestCase):
             ('post_delete', self.mock.post_delete),
         )
 
-    @pytest.mark.xfail(reason='Need to implement the override on Manager', run=False)
     def test_create_hooks_order(self):
         qs = CustomManagerModel.objects.get_queryset()
         self.mock.UNWATCHED_create.side_effect = qs.UNWATCHED_create
@@ -231,9 +228,66 @@ class SameCustomManagerOnDifferentClassesTests(TestCase):
             ('post_delete', self.mock2.post_delete),
         )
 
-    @pytest.mark.xfail(reason='Need to implement the override on Manager', run=False)
     def test_create_hooks_order(self):
-        pass
+        qs = CustomManagerModel.objects.get_queryset()
+        self.mock.UNWATCHED_create.side_effect = qs.UNWATCHED_create
+        setattr(qs, 'UNWATCHED_create', self.mock.UNWATCHED_create)
+        with patch.object(CustomManagerModel.objects, 'get_queryset', lambda: qs):
+            instance = CustomManagerModel.objects.create('fake_param', text='fake')
+
+        qs = CustomManagerModel2.objects.get_queryset()
+        self.mock2.UNWATCHED_create.side_effect = qs.UNWATCHED_create
+        setattr(qs, 'UNWATCHED_create', self.mock2.UNWATCHED_create)
+        with patch.object(CustomManagerModel2.objects, 'get_queryset', lambda: qs):
+            instance2 = CustomManagerModel2.objects.create('fake_param_2', text='fake_2')
+
+        self.mock.assert_has_calls(
+            [
+                call.pre_save(
+                    [CustomManagerModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.pre_create(
+                    [CustomManagerModel(text='fake')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.UNWATCHED_create(text='fake'),
+                call.post_create(
+                    CustomManagerModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+                call.post_save(
+                    CustomManagerModel.objects.filter(pk=instance.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake'}},
+                ),
+            ]
+        )
+        self.assertEqual(len(self.mock.mock_calls), 5)
+        self.assertEqual(6, CustomManagerModel.objects.count())
+
+        self.mock2.assert_has_calls(
+            [
+                call.pre_save(
+                    [CustomManagerModel2(text='fake_2')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake_2'}},
+                ),
+                call.pre_create(
+                    [CustomManagerModel2(text='fake_2')],
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake_2'}},
+                ),
+                call.UNWATCHED_create(text='fake_2'),
+                call.post_create(
+                    CustomManagerModel2.objects.filter(pk=instance2.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake_2'}},
+                ),
+                call.post_save(
+                    CustomManagerModel2.objects.filter(pk=instance2.pk),
+                    {'source': _QUERY_SET, 'operation_params': {'text': 'fake_2'}},
+                ),
+            ]
+        )
+        self.assertEqual(len(self.mock2.mock_calls), 5)
+        self.assertEqual(6, CustomManagerModel2.objects.count())
 
     @patch('tests.managers.watched')
     def test_update_hooks_order(self, mocked_watched):

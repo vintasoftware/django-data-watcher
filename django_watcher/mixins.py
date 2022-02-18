@@ -66,7 +66,7 @@ class CreateWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def _watched_create(cls, target: WatchedCreateQuerySet, **kwargs) -> S:
+    def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
         if cls.is_overriden('pre_create'):
             instance = target.model(**kwargs)
             cls.pre_create([instance], {'source': _QUERY_SET, 'operation_params': kwargs})
@@ -78,8 +78,8 @@ class CreateWatcherMixin(AbstractWatcher):
         return instance
 
     @classmethod
-    def _create(cls, target: WatchedCreateQuerySet, **kwargs) -> S:
-        return cls._run_inside_transaction(cls._watched_create, target, **kwargs)
+    def _create(cls, target: WatchedCreateQuerySet, *args, **kwargs) -> S:
+        return cls._run_inside_transaction(cls._watched_create, target, *args, **kwargs)
 
     @classmethod
     def _watched_save(cls, target: S, **kwargs) -> None:
@@ -217,7 +217,7 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
         cls._run_inside_transaction(cls._watched_save, target, **kwargs)
 
     @classmethod
-    def _watched_create(cls, target: WatchedCreateQuerySet, **kwargs) -> S:
+    def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
         cls.pre_save([target.model(**kwargs)], {'source': _QUERY_SET, 'operation_params': kwargs})
         instance: WatchedSaveModel = super()._watched_create(target, **kwargs)
         cls.post_save(cls.to_queryset(instance), {'source': _QUERY_SET, 'operation_params': kwargs})

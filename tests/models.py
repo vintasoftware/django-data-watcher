@@ -92,3 +92,13 @@ class CustomManagerModel(WatcherModel):
 @watched(watchers.StubSaveDeleteWatcher2)
 class CustomManagerModel2(WatcherModel):
     objects = SpyableManager()
+
+
+@watched(watchers.DeleteWatcher)
+class RelationDeleteModel(WatcherModel):
+    pass
+
+
+@watched(watchers.DeleteWatcher2)
+class RelationDeleteModel2(WatcherModel):
+    delete_model = models.ForeignKey(RelationDeleteModel, on_delete=models.DO_NOTHING)

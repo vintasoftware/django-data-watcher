@@ -56,3 +56,18 @@ class StubSaveDeleteWatcher(WatchInspector, SaveWatcherMixin, DeleteWatcherMixin
 
 class StubSaveDeleteWatcher2(WatchInspector, SaveWatcherMixin, DeleteWatcherMixin):
     pass
+
+
+class DeleteWatcher(DeleteWatcherMixin):
+    @classmethod
+    def post_delete(cls, undeleted_instances) -> None:
+        from tests.models import RelationDeleteModel2  # noqa
+
+        for i in undeleted_instances:
+            RelationDeleteModel2.objects.filter(delete_model=i).delete()
+
+
+class DeleteWatcher2(DeleteWatcherMixin):
+    @classmethod
+    def post_delete(cls, undeleted_instances) -> None:
+        raise Exception

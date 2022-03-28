@@ -178,8 +178,12 @@ def _get_watched_manager_cls(manager: models.Manager, watched_operations: List[s
 def _set_watched_manager(model: type, manager_attr: str, watched_operations: List[str]) -> None:
     manager = getattr(model, manager_attr)
     manager_cls = _get_watched_manager_cls(manager, watched_operations)
+    manager = manager_cls()
 
-    setattr(model, manager_attr, manager_cls())
+    if manager_attr == 'objects':
+        setattr(manager, 'use_for_related_fields', True)
+
+    setattr(model, manager_attr, manager)
 
 
 def _set_watched_model(cls: type, watched_operations: List[str]) -> type:
@@ -235,6 +239,9 @@ def watched(
         else:
             for manager_attr in watched_managers:
                 _set_watched_manager(model, manager_attr, objects_operations)
+
+        # if not watched_managers or 'objects' in watched_managers:
+        #     setattr(model, '_default_objects', getattr(model, 'objects'))
 
         return model
 

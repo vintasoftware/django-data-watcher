@@ -38,13 +38,13 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] [C] Revisite string import for watchers
 -   [x] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
 -   [x] [C] Limit the watched operations (only delete, create, update, save)
--   [ ] [C] Test
+-   [x] [C] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
     -   [x] test abstract_watcher
     -   [x] test decorators
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
-    -   [ ] Relational Testing (A model hook call another model with has hooks)
+    -   [x] Relational Testing (A model hook call another model with has hooks)
 -   [x] [C] Model.objects.create() calls instance.save().
     -   [x] [F] Override Manager as well not only queryset
     -   [x] [C] queryset UNWATCHED_create needs to call UNWATCHED_save of instance

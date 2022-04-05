@@ -129,11 +129,11 @@ class UpdateWatcherMixin(AbstractWatcher):
     Implement the methods you need choosing one or more of the followings
 
     @classmethod
-    def pre_update(cls, target: models.QuerySet) -> None:
+    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
         ...
 
     @classmethod
-    def post_update(cls, target: models.QuerySet) -> None:
+    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
         ...
     """
 

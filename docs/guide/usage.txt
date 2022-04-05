@@ -1,0 +1,162 @@
+===============
+Getting Started
+===============
+
+The Hooks
+---------
+
+Every basic data operation in Django can trigger a hook (Except read operations).
+And we have these hooks availables:
+
+`pre_create`
+`pre_update`
+`pre_save`
+`pre_delete`
+`post_create`
+`post_update`
+`post_save`
+`post_delete`
+
+You just need to implement the hook in model's Watcher class
+
+
+The Watcher
+-----------
+
+The Watcher class is the core of our project, on that you will coordinate the hooks of your model.
+We do give 3 basic mixins (`DeleteWatcherMixin`, `CreateWatcherMixin`, `UpdateWatcherMixin`) which will control your data flow.
+We do have a 4th mixins that is already a mix up of Create and Update mixins: `SaveWatcherMixin`
+These mixins will call the hooks in the approprieted order together with the desired operation everything inside a transaction, and it will Rollback if something goes wrong.
+
+How to extend a basic mixins::
+
+    # my_app.watchers.py
+    from __future__ import annotation
+
+    from typing import TYPE_CHECKING, List
+
+    from django_watcher.mixins import CreateWatcherMixin, DeleteWatcherMixin
+
+    from .tasks import send_deletion_email
+
+    if TYPE_CHECKING:
+        from .models import MyModel
+
+
+    class MyModelWatcher(CreateWatcherMixin, DeleteWatcherMixin):
+        @classmethod
+        def post_delete(cls, undeleted_instances: List[MyModel]):
+            send_deletetion_email(undeleted_instances)
+
+        @classmethod
+        def pre_create(cls, target: List[MyModel], meta_params: dict):
+            # do transformation, call functions, whatever you feel necessary
+
+
+This section is only to show how easy is to use, but you can dive deep on the next section Avaible Watchers to check what are the available parameters of the hooks.
+
+
+DeleteWatcherMixin
+~~~~~~~~~~~~~~~~~~
+
+The DeleteWatcherMixin extends our `AbstractWatcher` has the following hooks::
+
+    @classmethod
+    def pre_delete(cls, target: models.QuerySet) -> None:
+        ...
+
+    @classmethod
+    def post_delete(cls, undeleted_instances: List[D]) -> None:
+        ...
+
+
+CreateWatcherMixin
+~~~~~~~~~~~~~~~~~~
+
+The CreateWatcherMixin extends our `AbstractWatcher` has the following hooks::
+
+    @classmethod
+    def pre_create(cls, target: List[S], meta_params: MetaParams) -> None:
+        ...
+
+    @classmethod
+    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+        ...
+
+
+To understand what is `MetaParams` check here.
+
+UpdateWatcherMixin
+~~~~~~~~~~~~~~~~~~
+
+The UpdateWatcherMixin extends our `AbstractWatcher` and has the following hooks::
+
+    @classmethod
+    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+        ...
+
+    @classmethod
+    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+        ...
+
+
+To understand what is `MetaParams` check here.
+
+SaveWatcherMixin
+~~~~~~~~~~~~~~~~~~
+
+The SaveWatcherMixin extends `CreateWatcherMixin` and `UpdateWatcherMixin` has the same hooks of it supers and::
+
+    @classmethod
+    def pre_save(cls, target: Union[List[S], models.QuerySet], meta_params: MetaParams) -> None:
+        pass
+
+    @classmethod
+    def post_save(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+        pass
+
+`pre_save` and `post_save` hooks will run indendently if it is a create or update operation
+
+Create hooks order:
+`pre_save` > `pre_create` > `create` > `post_create` > `post_save`
+
+Update hooks order:
+`pre_save` > `pre_update` > `update` > `post_update` > `post_save`
+
+
+To understand what is `MetaParams` check here.
+
+
+The Model
+----------
+
+Setting the Watcher on the model::
+
+    # You will always decorate your model
+    from django_watcher.decorators import watched
+
+    # Approach #1 - Import the watcher locally
+    from my_app.whatchers import MyWatcher
+
+    @watched(MyWatcher)
+    class MyModel(models.Model):
+        ...
+
+    # Approach #2 - Give a custom path
+    @watched('my_app.services.watchers.MyWatcher')
+    class MyModel(models.Model):
+        ...
+
+    # Approach #3 - Give de module name + watcher name if is inside a `watchers.py` of the same django app
+    @watched('my_app.MyWatcher')
+    class MyModel(models.Model):
+        ...
+
+
+Also if you have other managers (aside from `objects`) you can declarate it, on the seccond param of the `watched` decorator, default value is `['objects']`::
+
+    from django_watcher.decorators import watched
+
+    @watched('my_app.MyWatcher', ['objects', 'deleted_objects'])
+    class MyModel(models.Model):
+        ...

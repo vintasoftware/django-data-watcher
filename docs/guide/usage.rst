@@ -2,35 +2,64 @@
 Getting Started
 ===============
 
+Here you will understand how to use our WatcherMixins to decorate your Django Models and take advantage of the Hooks
+
+#. Extend a base mixin, implementing the desired hook. check :ref:`the_watcher` and :ref:`available_mixins`.
+#. Decorate you Model with **watched** decorator, check :ref:`the_model`
+
 The Hooks
 ---------
 
 Every basic data operation in Django can trigger a hook (Except read operations).
 And we have these hooks availables:
 
-`pre_create`
-`pre_update`
-`pre_save`
-`pre_delete`
-`post_create`
-`post_update`
-`post_save`
-`post_delete`
+- **pre_create** called by: :ref:`create_mixin`, and :ref:`save_mixin`
+- **pre_update** called by: :ref:`update_mixin`, and :ref:`save_mixin`
+- **pre_save** called by: :ref:`save_mixin`
+- **pre_delete** called by: :ref:`delete_mixin`
+- **post_create** called by: :ref:`create_mixin`, and :ref:`save_mixin`
+- **post_update** called by: :ref:`update_mixin`, and :ref:`save_mixin`
+- **post_save** called by: :ref:`save_mixin`
+- **post_delete** called by: :ref:`delete_mixin`
 
-You just need to implement the hook in model's Watcher class
+Each hook is a classmethod, it will always have the `target` param, update and create hooks will also have the `meta_params` param.
 
+Target
+~~~~~~
 
-The Watcher
------------
+| The Target represents the objects afected by the current operation.
+| It can be a already filtered QuerySet or a List which instances.
+| Each hook signature will specify the type of the target, but you can infer thinking like: "Is possible to have a queryset here?" in pre_create hooks is not so you will receive a list of objects.
+| To check hook signature go to the specific mixin.
+
+.. _meta_params:
+
+MetaParams
+~~~~~~~~~~
+
+The Metaparams is a TypedDict which will inform you about the trigger of the current operation::
+
+    source: str  # "queryset" or "instance"
+    operation_params: dict  # is the kwargs of the trigger operation
+    unsaved_instance: optional[models.Model]  # in pre update operations triggered by instances it will bring the modified instance
+
+.. _the_watcher:
+
+Create Your Watcher
+-------------------
 
 The Watcher class is the core of our project, on that you will coordinate the hooks of your model.
+
 We do give 3 basic mixins (`DeleteWatcherMixin`, `CreateWatcherMixin`, `UpdateWatcherMixin`) which will control your data flow.
-We do have a 4th mixins that is already a mix up of Create and Update mixins: `SaveWatcherMixin`
+
+Also, exists a 4th mixin that is a mix up of Create and Update mixins: `SaveWatcherMixin`.
+
 These mixins will call the hooks in the approprieted order together with the desired operation everything inside a transaction, and it will Rollback if something goes wrong.
 
 How to extend a basic mixins::
 
     # my_app.watchers.py
+
     from __future__ import annotation
 
     from typing import TYPE_CHECKING, List
@@ -52,9 +81,33 @@ How to extend a basic mixins::
         def pre_create(cls, target: List[MyModel], meta_params: dict):
             # do transformation, call functions, whatever you feel necessary
 
+Usage of type hints is optional::
 
-This section is only to show how easy is to use, but you can dive deep on the next section Avaible Watchers to check what are the available parameters of the hooks.
+    # my_app.watchers.py
 
+    from django_watcher.mixins import CreateWatcherMixin, DeleteWatcherMixin
+
+    from .tasks import send_deletion_email
+
+
+    class MyModelWatcher(CreateWatcherMixin, DeleteWatcherMixin):
+        @classmethod
+        def post_delete(cls, undeleted_instances):
+            send_deletetion_email(undeleted_instances)
+
+        @classmethod
+        def pre_create(cls, target, meta_params):
+            # do transformation, call functions, whatever you feel necessary
+
+
+This section is only to show how easy is to use, but you can dive deep on the next section :ref:`available_mixins` to check what are the available parameters of the hooks.
+
+.. _available_mixins:
+
+Available Mixins
+----------------
+
+.. _delete_mixin:
 
 DeleteWatcherMixin
 ~~~~~~~~~~~~~~~~~~
@@ -69,6 +122,7 @@ The DeleteWatcherMixin extends our `AbstractWatcher` has the following hooks::
     def post_delete(cls, undeleted_instances: List[D]) -> None:
         ...
 
+.. _create_mixin:
 
 CreateWatcherMixin
 ~~~~~~~~~~~~~~~~~~
@@ -76,7 +130,7 @@ CreateWatcherMixin
 The CreateWatcherMixin extends our `AbstractWatcher` has the following hooks::
 
     @classmethod
-    def pre_create(cls, target: List[S], meta_params: MetaParams) -> None:
+    def pre_create(cls, target: List['CreatedModel'], meta_params: MetaParams) -> None:
         ...
 
     @classmethod
@@ -84,7 +138,9 @@ The CreateWatcherMixin extends our `AbstractWatcher` has the following hooks::
         ...
 
 
-To understand what is `MetaParams` check here.
+To understand what is :ref:`meta_params`, click on the link.
+
+.. _update_mixin:
 
 UpdateWatcherMixin
 ~~~~~~~~~~~~~~~~~~
@@ -100,7 +156,9 @@ The UpdateWatcherMixin extends our `AbstractWatcher` and has the following hooks
         ...
 
 
-To understand what is `MetaParams` check here.
+To understand what is :ref:`meta_params`, click on the link.
+
+.. _save_mixin:
 
 SaveWatcherMixin
 ~~~~~~~~~~~~~~~~~~
@@ -108,27 +166,37 @@ SaveWatcherMixin
 The SaveWatcherMixin extends `CreateWatcherMixin` and `UpdateWatcherMixin` has the same hooks of it supers and::
 
     @classmethod
-    def pre_save(cls, target: Union[List[S], models.QuerySet], meta_params: MetaParams) -> None:
+    def pre_save(cls, target: Union[List['CreatedModel'], models.QuerySet], meta_params: MetaParams) -> None:
         pass
 
     @classmethod
     def post_save(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
         pass
 
-`pre_save` and `post_save` hooks will run indendently if it is a create or update operation
+`pre_save` and `post_save` hooks will **always** run.
 
 Create hooks order:
-`pre_save` > `pre_create` > `create` > `post_create` > `post_save`
+
+#. **pre_save**
+#. **pre_create**
+#. **create**
+#. **post_create**
+#. **post_save**
 
 Update hooks order:
-`pre_save` > `pre_update` > `update` > `post_update` > `post_save`
+#. **pre_save**
+#. **pre_update**
+#. **update**
+#. **post_update**
+#. **post_save**
 
 
-To understand what is `MetaParams` check here.
+To understand what is :ref:`meta_params`, click on the link.
 
+.. _the_model:
 
-The Model
-----------
+Decorate Your Model
+-------------------
 
 Setting the Watcher on the model::
 
@@ -152,6 +220,9 @@ Setting the Watcher on the model::
     class MyModel(models.Model):
         ...
 
+
+Not default managers
+~~~~~~~~~~~~~~~~~~~~
 
 Also if you have other managers (aside from `objects`) you can declarate it, on the seccond param of the `watched` decorator, default value is `['objects']`::
 

@@ -184,6 +184,7 @@ Create hooks order:
 #. **post_save**
 
 Update hooks order:
+
 #. **pre_save**
 #. **pre_update**
 #. **update**
@@ -221,8 +222,8 @@ Setting the Watcher on the model::
         ...
 
 
-Not default managers
-~~~~~~~~~~~~~~~~~~~~
+Using others than default django managers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Also if you have other managers (aside from `objects`) you can declarate it, on the seccond param of the `watched` decorator, default value is `['objects']`::
 

@@ -13,7 +13,9 @@ It's very easy to use and you can improve the readbility and performance of your
     :maxdepth: 3
     :caption: User Guide
 
+    guide/install
     guide/usage
+    guide/tutorial
 
 Indices and tables
 ==================

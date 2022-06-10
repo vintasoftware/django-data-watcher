@@ -34,28 +34,30 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Update and Save Mixins
 -   [x] Take a look into \_default_manager and \_base_manager (Create specific test cases)
 -   [x] Set gh actions to test and build
--   [x] [C] Receive params on hooks to check modifications (Update/Save)
--   [x] [C] Revisite string import for watchers
--   [x] [C] Remove the need of saying which operation is beeing whatched, infer based on the watcher
--   [x] [C] Limit the watched operations (only delete, create, update, save)
--   [x] [C] Test
+-   [x] Receive params on hooks to check modifications (Update/Save)
+-   [x] Revisite string import for watchers
+-   [x] Remove the need of saying which operation is beeing whatched, infer based on the watcher
+-   [x] Limit the watched operations (only delete, create, update, save)
+-   [x] Packaging
+-   [x] Model.objects.create() calls instance.save().
+-   [ ] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
     -   [x] test abstract_watcher
     -   [x] test decorators
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [x] Relational Testing (A model hook call another model with has hooks)
--   [x] [C] Model.objects.create() calls instance.save().
-    -   [x] [F] Override Manager as well not only queryset
-    -   [x] [C] queryset UNWATCHED_create needs to call UNWATCHED_save of instance
--   [ ] [C] Docs
+    -   [ ] Create testing matrix for Django versions
+-   [ ] Docs
+    -   [x] Usage
+    -   [x] Tutorial
+    -   [x] Installation
+    -   [ ] Docstrings on the code
+    -   [ ] Fix theme
+    -   [ ] Update Readme (after finishing roadmap)
 -   [ ] [F] Create Stubs for decorated models
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
--   [x] Packaging [C]
-    -   [x] [C] Deploy with poetry
-    -   [x] [F] Poetry configuration vscode
-    -   [ ] [F] Make devcontainer better works with poetry, move the venv and create a docker volume
--   [ ] [D] [F] Whave a way of ignoring hooks by param
+-   [ ] [F] Have a way of ignoring hooks by param
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)

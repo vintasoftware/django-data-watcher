@@ -1,5 +1,7 @@
 # Django Data Watcher
 
+[![Documentation Status](https://readthedocs.org/projects/django-data-watcher/badge/?version=latest)](https://django-data-watcher.readthedocs.io/en/latest/?badge=latest)
+
 ## _Django models/data operations observer_
 
 Django Data Watcher is a library that will make easier to create/mantain side-effects of data operations in your django models.
@@ -40,6 +42,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] Limit the watched operations (only delete, create, update, save)
 -   [x] Packaging
 -   [x] Model.objects.create() calls instance.save().
+-   [x] Publish v1
 -   [ ] Test
     -   [x] Configure pytest with coverage
     -   [x] Use Django models and querysets inside tests
@@ -48,10 +51,11 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [x] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Create testing matrix for Django versions
--   [ ] Docs
+-   [ ] [C] Docs
     -   [x] Usage
     -   [x] Tutorial
     -   [x] Installation
+    -   [x] Badge
     -   [ ] Docstrings on the code
     -   [ ] Fix theme
     -   [ ] Update Readme (after finishing roadmap)
@@ -62,5 +66,6 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)
 -   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
+-   [ ] [F] SoftDeletion Mixin
 -   [ ] Application Example also comparing with Django signals
 -   [ ] Talk

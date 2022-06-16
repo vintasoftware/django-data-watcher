@@ -1,4 +1,4 @@
-name: Publish to Pypi
+name: Publish to Test Pypi
 
 on: workflow_dispatch
 
@@ -11,5 +11,7 @@ jobs:
         uses: JRubics/poetry-publish@v1.9
         with:
           python_version: 3.6
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          repository_name: "test-pypi"
+          repository_url: "https://test.pypi.org/legacy/"
+          pypi_token: ${{ secrets.TEST_PYPI_TOKEN }}
           ignore_dev_requirements: "yes"

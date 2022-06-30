@@ -56,16 +56,26 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] Tutorial
     -   [x] Installation
     -   [x] Badge
+    -   [x] Fix theme
+    -   [ ] Fix Dynamic Version
     -   [ ] Docstrings on the code
-    -   [ ] Fix theme
+    -   [ ] How to Ignore a Hook
+    -   [ ] Query and Instance hooks
+    -   [ ] How does it help? Bond or Arch?
+    -   [ ] Redefine docs sections
     -   [ ] Update Readme (after finishing roadmap)
+-   [x] [F] Have a way of ignoring hooks by param
+-   [ ] [F] Have instance and queryTools separated hooks
+-   [ ] [F] Should unsaved instance come in all operations
+-   [ ] [C] Reorganize the imports from root
 -   [ ] [F] Create Stubs for decorated models
+-   [ ] [M] Split decorators.py in a module
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
--   [ ] [F] Have a way of ignoring hooks by param
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)
 -   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] [F] SoftDeletion Mixin
+-   [ ] [M] `_generate_settable_for_manager`, `_generate_settable_for_qs`, and `_generate_settable_for_model` should be the same function, and fix typing
 -   [ ] Application Example also comparing with Django signals
 -   [ ] Talk

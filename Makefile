@@ -22,3 +22,6 @@ test_nocov:
 
 test:
 	poetry run python -- runtests.py --coverage -s $(ARG)
+
+build_doc:
+	poetry run sphinx-build -b html docs docs/_build

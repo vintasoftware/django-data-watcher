@@ -16,10 +16,14 @@
 
 
 # -- Project information -----------------------------------------------------
+# import pkg_resources
+# version = pkg_resources.get_distribution('django-watcher').version
 
 project = 'django-data-watcher'
 copyright = '2022, Vinta Serviços e Soluções Tecnológicas LTDA'  # noqa
 author = 'Vinta Serviços e Soluções Tecnológicas LTDA'
+version = '1.1.0'
+release = 'beta'
 
 
 # -- General configuration ---------------------------------------------------

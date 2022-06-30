@@ -32,7 +32,11 @@ class AbstractWatcher:
         return func(target, *args, **kwargs)
 
     @classmethod
-    def run(cls, operation: str, target: TargetType, *args: Any, **kwargs: Any):
+    def run(
+        cls, operation: str, target: TargetType, *args: Any, _ignore_hooks=False, **kwargs: Any
+    ):
+        if _ignore_hooks:
+            return getattr(target, f'UNWATCHED_{operation}')(*args, **kwargs)
         return getattr(cls, f'_{operation}')(target, *args, **kwargs)
 
     @classmethod

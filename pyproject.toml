@@ -1,9 +1,16 @@
 [tool.poetry]
 name = "django-watcher"
-version = "1.0.0"
+version = "1.1.0"
 description = "Django Data Watcher is a library that will make easier to create/mantain side-effects of data operations in your django models."
 authors = ["Vinta Serviços e Soluções Tecnológicas LTDA"]
 license = "MIT"
+documentation = "https://django-data-watcher.readthedocs.io/"
+keywords = ["django", "orm", "optimization"]
+classifiers = [
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed"
+]
 
 [tool.poetry.dependencies]
 python = "^3.6.8"

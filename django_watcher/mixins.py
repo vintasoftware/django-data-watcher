@@ -57,6 +57,19 @@ TargetDelete = Union[D, WatchedDeleteModel]
 
 
 class CreateWatcherMixin(AbstractWatcher):
+    """
+    CreateWatcherMixin is a DataWatcher for create operations
+    Implement the methods you need choosing one or more of the followings
+
+    @classmethod
+    def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+        ...
+    """
+
     @classmethod
     def pre_create(cls, target: List[S], meta_params: MetaParams) -> None:
         pass
@@ -100,6 +113,19 @@ class CreateWatcherMixin(AbstractWatcher):
 
 
 class DeleteWatcherMixin(AbstractWatcher):
+    """
+    DeleteWatcherMixin is a DataWatcher for delete operations
+    Implement the methods you need choosing one or more of the followings
+
+    @classmethod
+    def pre_delete(cls, target: models.QuerySet) -> None
+        ...
+
+    @classmethod
+    def post_delete(cls, undeleted_instances: List[Model]) -> None
+        ...
+    """
+
     @classmethod
     def pre_delete(cls, target: models.QuerySet) -> None:
         pass
@@ -125,15 +151,15 @@ class DeleteWatcherMixin(AbstractWatcher):
 
 class UpdateWatcherMixin(AbstractWatcher):
     """
-    UpdateWatcherMixin is DataWatcher for update operations
-    Implement the methods you need choosing one or more of the followings
+    UpdateWatcherMixin is a DataWatcher for update operations
+    Implement the methods you need, choosing one or more of the followings
 
     @classmethod
-    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
 
     @classmethod
-    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
     """
 
@@ -179,6 +205,38 @@ class UpdateWatcherMixin(AbstractWatcher):
 
 
 class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
+    """
+    SaveWatcherMixin is a DataWatcher for create and update operations.
+    Check hooks order for creation and update operation in the docs:
+    https://django-data-watcher.readthedocs.io/en/latest/guide/usage.html#savewatchermixin
+
+    Implement the methods you need choosing one or more of the followings
+
+    @classmethod
+    def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def pre_save(cls, target: Union[List[Model], models.QuerySet], meta_params: MetaParams) -> None
+        ...
+
+    @classmethod
+    def post_save(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+        ...
+    """
+
     @classmethod
     def pre_save(cls, target: Union[List[S], models.QuerySet], meta_params: MetaParams) -> None:
         pass

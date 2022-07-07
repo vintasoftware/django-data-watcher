@@ -41,7 +41,7 @@ The Metaparams is a TypedDict which will inform you about the trigger of the cur
 
     source: str  # "queryset" or "instance"
     operation_params: dict  # is the kwargs of the trigger operation
-    unsaved_instance: optional[models.Model]  # in pre update operations triggered by instances it will bring the modified instance
+    instance_ref: optional[models.Model]  # in instance operations triggered by instances it will bring the reference to the instance that the operation was called
 
 .. _the_watcher:
 

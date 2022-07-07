@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, call, patch
 
 from django.test import TestCase
 
-from django_watcher.mixins import _QUERY_SET
+from django_watcher.mixins import _QUERY_SET, MetaParams
 from tests.models import (
     CasualStringWatcherModel,
     CasualStringWatcherModel2,
@@ -155,6 +155,9 @@ class CustomAndSubManagerTests(TestCase):
 
     @patch('tests.managers.watched')
     def test_delete_hooks_order(self, mocked_watched):
+
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': {}}
+
         instance = CustomManagerModel.objects.first()
         qs = CustomManagerModel.objects.filter(pk=instance.pk)
         self.mock.UNWATCHED_delete.side_effect = qs.UNWATCHED_delete
@@ -171,12 +174,14 @@ class CustomAndSubManagerTests(TestCase):
 
         self.mock.assert_has_calls(
             [
-                call.pre_delete(CustomManagerModel.objects.filter(pk=instance.pk)),
+                call.pre_delete(CustomManagerModel.objects.filter(pk=instance.pk), meta_params),
                 call.UNWATCHED_delete('fake_param'),
-                call.post_delete([instance]),
-                call.pre_delete(CustomManagerModel.other_objects.filter(pk=instance_2.pk)),
+                call.post_delete([instance], meta_params),
+                call.pre_delete(
+                    CustomManagerModel.other_objects.filter(pk=instance_2.pk), meta_params
+                ),
                 call.UNWATCHED_delete_2('fake_param_2'),
-                call.post_delete([instance_2]),
+                call.post_delete([instance_2], meta_params),
             ]
         )
         mocked_watched.assert_has_calls([call('fake_param'), call('fake_param_2')])
@@ -371,19 +376,21 @@ class SameCustomManagerOnDifferentClassesTests(TestCase):
         with patch.object(CustomManagerModel2.objects, 'filter', lambda **_: qs):
             CustomManagerModel2.objects.filter(pk='fake').delete('fake_param_2')
 
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': {}}
+
         self.mock.assert_has_calls(
             [
-                call.pre_delete(CustomManagerModel.objects.filter(pk=instance.pk)),
+                call.pre_delete(CustomManagerModel.objects.filter(pk=instance.pk), meta_params),
                 call.UNWATCHED_delete('fake_param'),
-                call.post_delete([instance]),
+                call.post_delete([instance], meta_params),
             ]
         )
 
         self.mock2.assert_has_calls(
             [
-                call.pre_delete(CustomManagerModel2.objects.filter(pk=instance.pk)),
+                call.pre_delete(CustomManagerModel2.objects.filter(pk=instance.pk), meta_params),
                 call.UNWATCHED_delete('fake_param_2'),
-                call.post_delete([instance_2]),
+                call.post_delete([instance_2], meta_params),
             ]
         )
         mocked_watched.assert_has_calls([call('fake_param'), call('fake_param_2')])

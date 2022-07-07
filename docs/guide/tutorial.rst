@@ -66,7 +66,7 @@ Transforming it to a Watcher::
                 resync = 'starts_at' in operation_params or 'duration' in operation_params
             else:
                 old_instance = target.first()
-                instance = meta_params.get('unsaved_instance')
+                instance = meta_params.get('instance_ref')
                 resync = old_instance.starts_at != instance.starts_at or old_instance.duration !=  instance.duration:
 
             if resync:

@@ -50,6 +50,8 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] test decorators
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [x] Relational Testing (A model hook call another model with has hooks)
+    -   [ ] Test with Heritage
+    -   [ ] Text instance/querytools exclusive hooks
     -   [ ] Create testing matrix for Django versions
 -   [ ] [C] Docs
     -   [x] Usage
@@ -65,15 +67,16 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [ ] Redefine docs sections
     -   [ ] Update Readme (after finishing roadmap)
 -   [x] [F] Have a way of ignoring hooks by param
+-   [x] [F] Should unsaved instance come in all operations
 -   [ ] [F] Have instance and queryTools separated hooks
--   [ ] [F] Should unsaved instance come in all operations
 -   [ ] [C] Reorganize the imports from root
 -   [ ] [F] Create Stubs for decorated models
--   [ ] [M] Split decorators.py in a module
+-   [ ] [M] Split decorators.py in a module and reorganzing its typings
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)
+-   [ ] [M] Use `_ignore_hooks` instead of `UNWATCHED_operation`, rename it for `_unwatched_operation` and let only run method ref to it.
 -   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] [F] SoftDeletion Mixin
 -   [ ] [M] `_generate_settable_for_manager`, `_generate_settable_for_qs`, and `_generate_settable_for_model` should be the same function, and fix typing

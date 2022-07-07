@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Tuple, TypeVar, Union, cast
 
 from django.db import models
 
@@ -13,7 +13,7 @@ class _MetaParams(TypedDict):
 
 
 class MetaParams(_MetaParams, total=False):
-    unsaved_instance: models.Model
+    instance_ref: models.Model
 
 
 _INSTANCE = 'instance'
@@ -40,7 +40,7 @@ class WatchedCreateQuerySet(models.QuerySet):
 
 
 class WatchedDeleteQuerySet(models.QuerySet):
-    def UNWATCHED_delete(self) -> Tuple[int, Dict[str, int]]:  # noqa
+    def UNWATCHED_delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:  # noqa
         ...
 
 
@@ -53,13 +53,13 @@ class WatchedSaveQuerySet(WatchedCreateQuerySet, WatchedUpdateQuerySet):
     ...
 
 
-TargetDelete = Union[D, WatchedDeleteModel]
+TargetDelete = Union[D, WatchedDeleteQuerySet]
 
 
 class CreateWatcherMixin(AbstractWatcher):
     """
     CreateWatcherMixin is a DataWatcher for create operations
-    Implement the methods you need choosing one or more of the followings
+    Implement the methods you need choosing one or more of the following
 
     @classmethod
     def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
@@ -80,14 +80,14 @@ class CreateWatcherMixin(AbstractWatcher):
 
     @classmethod
     def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
+
         if cls.is_overriden('pre_create'):
             instance = target.model(**kwargs)
-            cls.pre_create([instance], {'source': _QUERY_SET, 'operation_params': kwargs})
+            cls.pre_create([instance], meta_params)
         instance = target.UNWATCHED_create(**kwargs)
         if cls.is_overriden('post_create'):
-            cls.post_create(
-                cls.to_queryset(instance), {'source': _QUERY_SET, 'operation_params': kwargs}
-            )
+            cls.post_create(cls.to_queryset(instance), meta_params)
         return instance
 
     @classmethod
@@ -96,12 +96,16 @@ class CreateWatcherMixin(AbstractWatcher):
 
     @classmethod
     def _watched_save(cls, target: S, **kwargs) -> None:
-        cls.pre_create([target], {'source': _INSTANCE, 'operation_params': kwargs})
+        meta_params: MetaParams = {
+            'source': _INSTANCE,
+            'operation_params': kwargs,
+            'instance_ref': target,
+        }
+
+        cls.pre_create([target], meta_params)
         target.UNWATCHED_save(**kwargs)
         if cls.is_overriden('post_create'):
-            cls.post_create(
-                cls.to_queryset(target), {'source': _INSTANCE, 'operation_params': kwargs}
-            )
+            cls.post_create(cls.to_queryset(target), meta_params)
 
     @classmethod
     def _save(cls, target: S, **kwargs) -> None:
@@ -115,7 +119,7 @@ class CreateWatcherMixin(AbstractWatcher):
 class DeleteWatcherMixin(AbstractWatcher):
     """
     DeleteWatcherMixin is a DataWatcher for delete operations
-    Implement the methods you need choosing one or more of the followings
+    Implement the methods you need choosing one or more of the following
 
     @classmethod
     def pre_delete(cls, target: models.QuerySet) -> None
@@ -127,21 +131,34 @@ class DeleteWatcherMixin(AbstractWatcher):
     """
 
     @classmethod
-    def pre_delete(cls, target: models.QuerySet) -> None:
+    def pre_delete(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
         pass
 
     @classmethod
-    def post_delete(cls, undeleted_instances: List[D]) -> None:
+    def post_delete(cls, undeleted_instances: List[D], meta_params: MetaParams) -> None:
         pass
 
     @classmethod
     def _watched_delete(
         cls, target: TargetDelete, *args: Any, **kwargs: Any
     ) -> Tuple[int, Dict[str, int]]:
-        cls.pre_delete(cls.to_queryset(target))
+        meta_params: MetaParams = (
+            {
+                'source': _QUERY_SET,
+                'operation_params': kwargs,
+            }
+            if cls.is_queryset(target)
+            else {
+                'source': _INSTANCE,
+                'operation_params': kwargs,
+                'instance_ref': cast(WatchedDeleteModel, target),
+            }
+        )
+
+        cls.pre_delete(cls.to_queryset(target), meta_params)
         instances = list(cls.to_queryset(target)) if cls.is_overriden('post_delete') else []
         res = target.UNWATCHED_delete(*args, **kwargs)
-        cls.post_delete(instances)
+        cls.post_delete(instances, meta_params)
         return res
 
     @classmethod
@@ -152,7 +169,7 @@ class DeleteWatcherMixin(AbstractWatcher):
 class UpdateWatcherMixin(AbstractWatcher):
     """
     UpdateWatcherMixin is a DataWatcher for update operations
-    Implement the methods you need, choosing one or more of the followings
+    Implement the methods you need, choosing one or more of the following
 
     @classmethod
     def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
@@ -173,9 +190,11 @@ class UpdateWatcherMixin(AbstractWatcher):
 
     @classmethod
     def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
-        cls.pre_update(target, {'source': _QUERY_SET, 'operation_params': kwargs})
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
+
+        cls.pre_update(target, meta_params)
         result = target.UNWATCHED_update(*args, **kwargs)
-        cls.post_update(target, {'source': _QUERY_SET, 'operation_params': kwargs})
+        cls.post_update(target, meta_params)
         return result
 
     @classmethod
@@ -184,16 +203,17 @@ class UpdateWatcherMixin(AbstractWatcher):
 
     @classmethod
     def _watched_save(cls, target: S, **kwargs) -> None:
+        meta_params: MetaParams = {
+            'source': _INSTANCE,
+            'operation_params': kwargs,
+            'instance_ref': target,
+        }
+
         if cls.is_overriden('pre_update'):
-            cls.pre_update(
-                cls.to_queryset(target),
-                {'source': _INSTANCE, 'operation_params': kwargs, 'unsaved_instance': target},
-            )
+            cls.pre_update(cls.to_queryset(target), meta_params)
         target.UNWATCHED_save(**kwargs)
         if cls.is_overriden('post_update'):
-            cls.post_update(
-                cls.to_queryset(target), {'source': _INSTANCE, 'operation_params': kwargs}
-            )
+            cls.post_update(cls.to_queryset(target), meta_params)
 
     @classmethod
     def _save(cls, target: S, **kwargs) -> None:
@@ -210,7 +230,7 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
     Check hooks order for creation and update operation in the docs:
     https://django-data-watcher.readthedocs.io/en/latest/guide/usage.html#savewatchermixin
 
-    Implement the methods you need choosing one or more of the followings
+    Implement the methods you need choosing one or more of the following
 
     @classmethod
     def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
@@ -248,27 +268,30 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
     @classmethod
     def _watched_save(cls, target: S, **kwargs) -> None:
         create = not target.pk
+
+        meta_params: MetaParams = {
+            'source': _INSTANCE,
+            'operation_params': kwargs,
+            'instance_ref': target,
+        }
+
         if create:
-            cls.pre_save([target], {'source': _INSTANCE, 'operation_params': kwargs})
-            cls.pre_create([target], {'source': _INSTANCE, 'operation_params': kwargs})
+            cls.pre_save([target], meta_params)
+            cls.pre_create([target], meta_params)
         else:
             qs = cls.to_queryset(target)
-            cls.pre_save(
-                qs, {'source': _INSTANCE, 'operation_params': kwargs, 'unsaved_instance': target}
-            )
-            cls.pre_update(
-                qs, {'source': _INSTANCE, 'operation_params': kwargs, 'unsaved_instance': target}
-            )
+            cls.pre_save(qs, meta_params)
+            cls.pre_update(qs, meta_params)
 
         target.UNWATCHED_save(**kwargs)
 
         qs = cls.to_queryset(target)
         if create:
-            cls.post_create(qs, {'source': _INSTANCE, 'operation_params': kwargs})
+            cls.post_create(qs, meta_params)
         else:
-            cls.post_update(qs, {'source': _INSTANCE, 'operation_params': kwargs})
+            cls.post_update(qs, meta_params)
 
-        cls.post_save(qs, {'source': _INSTANCE, 'operation_params': kwargs})
+        cls.post_save(qs, meta_params)
 
     @classmethod
     def _save(cls, target: S, **kwargs) -> None:
@@ -276,14 +299,18 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
 
     @classmethod
     def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
-        cls.pre_save([target.model(**kwargs)], {'source': _QUERY_SET, 'operation_params': kwargs})
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
+
+        cls.pre_save([target.model(**kwargs)], meta_params)
         instance: WatchedSaveModel = super()._watched_create(target, **kwargs)
-        cls.post_save(cls.to_queryset(instance), {'source': _QUERY_SET, 'operation_params': kwargs})
+        cls.post_save(cls.to_queryset(instance), meta_params)
         return instance  # type: ignore
 
     @classmethod
     def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
-        cls.pre_save(target, {'source': _QUERY_SET, 'operation_params': kwargs})
+        meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
+
+        cls.pre_save(target, meta_params)
         res = super()._watched_update(target, *args, **kwargs)
-        cls.post_save(target, {'source': _QUERY_SET, 'operation_params': kwargs})
+        cls.post_save(target, meta_params)
         return res

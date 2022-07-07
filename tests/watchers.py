@@ -60,7 +60,7 @@ class StubSaveDeleteWatcher2(WatchInspector, SaveWatcherMixin, DeleteWatcherMixi
 
 class DeleteWatcher(DeleteWatcherMixin):
     @classmethod
-    def post_delete(cls, undeleted_instances) -> None:
+    def post_delete(cls, undeleted_instances, meta_params) -> None:
         from tests.models import RelationDeleteModel2  # noqa
 
         for i in undeleted_instances:
@@ -69,5 +69,5 @@ class DeleteWatcher(DeleteWatcherMixin):
 
 class DeleteWatcher2(DeleteWatcherMixin):
     @classmethod
-    def post_delete(cls, undeleted_instances) -> None:
+    def post_delete(cls, undeleted_instances, meta_params) -> None:
         raise Exception

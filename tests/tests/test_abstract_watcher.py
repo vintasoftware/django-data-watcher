@@ -5,7 +5,7 @@ from django.test.testcases import TestCase
 
 from faker import Faker
 
-from django_watcher.abstract_watcher import AbstractWatcher
+from django_watcher import AbstractWatcher
 from tests.models import CreateModel, DeleteModel, SaveModel, UpdateModel
 from tests.watchers import StubCreateWatcher, StubDeleteWatcher, StubSaveWatcher, StubUpdateWatcher
 

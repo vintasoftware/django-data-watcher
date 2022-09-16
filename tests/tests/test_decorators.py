@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, call, patch
 
 from django.test import TestCase
 
-from django_watcher.mixins import _QUERY_SET, MetaParams
+from django_watcher import MetaParams
+from django_watcher.mixins import _QUERY_SET
 from tests.models import (
     CasualStringWatcherModel,
     CasualStringWatcherModel2,

@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple
 
-from django_watcher.abstract_watcher import AbstractWatcher
-from django_watcher.mixins import (
+from django_watcher import (
+    AbstractWatcher,
     CreateWatcherMixin,
     DeleteWatcherMixin,
     SaveWatcherMixin,

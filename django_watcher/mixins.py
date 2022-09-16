@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, TypeVar, Union, cast
 
 from django.db import models
 
@@ -19,41 +19,35 @@ class MetaParams(_MetaParams, total=False):
 _INSTANCE = 'instance'
 _QUERY_SET = 'query_set'
 
+if TYPE_CHECKING:
 
-class WatchedDeleteModel(models.Model):
-    def UNWATCHED_delete(self, **kwargs) -> Tuple[int, Dict[str, int]]:  # noqa
-        pass
+    class WatchedDeleteModel(models.Model):
+        def UNWATCHED_delete(self, **kwargs) -> Tuple[int, Dict[str, int]]:  # nopep8
+            pass
 
+    class WatchedSaveModel(models.Model):
+        def UNWATCHED_save(self, **kwargs) -> None:  # nopep8
+            pass
 
-class WatchedSaveModel(models.Model):
-    def UNWATCHED_save(self, **kwargs) -> None:  # noqa
-        pass
+    S = TypeVar('S', bound=WatchedSaveModel)
+    D = TypeVar('D', bound=WatchedDeleteModel)
 
+    class WatchedCreateQuerySet(models.QuerySet):
+        def UNWATCHED_create(self, *args: Any, **kwargs: Any) -> S:  # nopep8
+            pass
 
-S = TypeVar('S', bound=WatchedSaveModel)
-D = TypeVar('D', bound=WatchedDeleteModel)
+    class WatchedDeleteQuerySet(models.QuerySet):
+        def UNWATCHED_delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:  # nopep8
+            pass
 
+    class WatchedUpdateQuerySet(models.QuerySet):
+        def UNWATCHED_update(self, **kwargs: Any) -> int:  # nopep8
+            pass
 
-class WatchedCreateQuerySet(models.QuerySet):
-    def UNWATCHED_create(self, *args: Any, **kwargs: Any) -> S:  # noqa
-        pass
-
-
-class WatchedDeleteQuerySet(models.QuerySet):
-    def UNWATCHED_delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:  # noqa
+    class WatchedSaveQuerySet(WatchedCreateQuerySet, WatchedUpdateQuerySet):
         ...
 
-
-class WatchedUpdateQuerySet(models.QuerySet):
-    def UNWATCHED_update(self, **kwargs: Any) -> int:  # noqa
-        pass
-
-
-class WatchedSaveQuerySet(WatchedCreateQuerySet, WatchedUpdateQuerySet):
-    ...
-
-
-TargetDelete = Union[D, WatchedDeleteQuerySet]
+    TargetDelete = Union['D', 'WatchedDeleteQuerySet']
 
 
 class CreateWatcherMixin(AbstractWatcher):
@@ -71,7 +65,7 @@ class CreateWatcherMixin(AbstractWatcher):
     """
 
     @classmethod
-    def pre_create(cls, target: List[S], meta_params: MetaParams) -> None:
+    def pre_create(cls, target: List['S'], meta_params: MetaParams) -> None:
         pass
 
     @classmethod
@@ -79,7 +73,7 @@ class CreateWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
+    def _watched_create(cls, target: 'WatchedCreateQuerySet', *_, **kwargs) -> 'S':
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
         if cls.is_overriden('pre_create'):
@@ -91,11 +85,11 @@ class CreateWatcherMixin(AbstractWatcher):
         return instance
 
     @classmethod
-    def _create(cls, target: WatchedCreateQuerySet, *args, **kwargs) -> S:
+    def _create(cls, target: 'WatchedCreateQuerySet', *args, **kwargs) -> 'S':
         return cls._run_inside_transaction(cls._watched_create, target, *args, **kwargs)
 
     @classmethod
-    def _watched_save(cls, target: S, **kwargs) -> None:
+    def _watched_save(cls, target: 'S', **kwargs) -> None:
         meta_params: MetaParams = {
             'source': _INSTANCE,
             'operation_params': kwargs,
@@ -108,7 +102,7 @@ class CreateWatcherMixin(AbstractWatcher):
             cls.post_create(cls.to_queryset(target), meta_params)
 
     @classmethod
-    def _save(cls, target: S, **kwargs) -> None:
+    def _save(cls, target: 'S', **kwargs) -> None:
         create = not target.pk
         if create:
             cls._run_inside_transaction(cls._watched_save, target, **kwargs)
@@ -135,12 +129,12 @@ class DeleteWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def post_delete(cls, undeleted_instances: List[D], meta_params: MetaParams) -> None:
+    def post_delete(cls, undeleted_instances: List['D'], meta_params: MetaParams) -> None:
         pass
 
     @classmethod
     def _watched_delete(
-        cls, target: TargetDelete, *args: Any, **kwargs: Any
+        cls, target: 'TargetDelete', *args: Any, **kwargs: Any
     ) -> Tuple[int, Dict[str, int]]:
         meta_params: MetaParams = (
             {
@@ -151,7 +145,7 @@ class DeleteWatcherMixin(AbstractWatcher):
             else {
                 'source': _INSTANCE,
                 'operation_params': kwargs,
-                'instance_ref': cast(WatchedDeleteModel, target),
+                'instance_ref': cast('WatchedDeleteModel', target),
             }
         )
 
@@ -162,7 +156,9 @@ class DeleteWatcherMixin(AbstractWatcher):
         return res
 
     @classmethod
-    def _delete(cls, target: TargetDelete, *args: Any, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
+    def _delete(
+        cls, target: 'TargetDelete', *args: Any, **kwargs: Any
+    ) -> Tuple[int, Dict[str, int]]:
         return cls._run_inside_transaction(cls._watched_delete, target, *args, **kwargs)
 
 
@@ -189,7 +185,7 @@ class UpdateWatcherMixin(AbstractWatcher):
         pass
 
     @classmethod
-    def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
+    def _watched_update(cls, target: 'WatchedUpdateQuerySet', *args, **kwargs) -> int:
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
         cls.pre_update(target, meta_params)
@@ -198,11 +194,11 @@ class UpdateWatcherMixin(AbstractWatcher):
         return result
 
     @classmethod
-    def _update(cls, target: WatchedUpdateQuerySet, *update_args, **kwargs) -> int:
+    def _update(cls, target: 'WatchedUpdateQuerySet', *update_args, **kwargs) -> int:
         return cls._run_inside_transaction(cls._watched_update, target, *update_args, **kwargs)
 
     @classmethod
-    def _watched_save(cls, target: S, **kwargs) -> None:
+    def _watched_save(cls, target: 'S', **kwargs) -> None:
         meta_params: MetaParams = {
             'source': _INSTANCE,
             'operation_params': kwargs,
@@ -216,7 +212,7 @@ class UpdateWatcherMixin(AbstractWatcher):
             cls.post_update(cls.to_queryset(target), meta_params)
 
     @classmethod
-    def _save(cls, target: S, **kwargs) -> None:
+    def _save(cls, target: 'S', **kwargs) -> None:
         update = bool(target.pk)
         if update:
             cls._run_inside_transaction(cls._watched_save, target, **kwargs)
@@ -258,7 +254,7 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
     """
 
     @classmethod
-    def pre_save(cls, target: Union[List[S], models.QuerySet], meta_params: MetaParams) -> None:
+    def pre_save(cls, target: Union[List['S'], models.QuerySet], meta_params: MetaParams) -> None:
         pass
 
     @classmethod
@@ -266,7 +262,7 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
         pass
 
     @classmethod
-    def _watched_save(cls, target: S, **kwargs) -> None:
+    def _watched_save(cls, target: 'S', **kwargs) -> None:
         create = not target.pk
 
         meta_params: MetaParams = {
@@ -294,20 +290,20 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
         cls.post_save(qs, meta_params)
 
     @classmethod
-    def _save(cls, target: S, **kwargs) -> None:
+    def _save(cls, target: 'S', **kwargs) -> None:
         cls._run_inside_transaction(cls._watched_save, target, **kwargs)
 
     @classmethod
-    def _watched_create(cls, target: WatchedCreateQuerySet, *_, **kwargs) -> S:
+    def _watched_create(cls, target: 'WatchedCreateQuerySet', *_, **kwargs) -> 'S':
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
         cls.pre_save([target.model(**kwargs)], meta_params)
-        instance: WatchedSaveModel = super()._watched_create(target, **kwargs)
+        instance: 'WatchedSaveModel' = super()._watched_create(target, **kwargs)
         cls.post_save(cls.to_queryset(instance), meta_params)
         return instance  # type: ignore
 
     @classmethod
-    def _watched_update(cls, target: WatchedUpdateQuerySet, *args, **kwargs) -> int:
+    def _watched_update(cls, target: 'WatchedUpdateQuerySet', *args, **kwargs) -> int:
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
         cls.pre_save(target, meta_params)

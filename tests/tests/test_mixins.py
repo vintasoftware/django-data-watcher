@@ -6,7 +6,8 @@ from unittest.mock import MagicMock, call, patch
 from django.db.models import QuerySet
 from django.test.testcases import TestCase
 
-from django_watcher.mixins import _INSTANCE, _QUERY_SET, MetaParams
+from django_watcher import MetaParams
+from django_watcher.mixins import _INSTANCE, _QUERY_SET
 from tests.models import CreateModel, DeleteModel, SaveDeleteModel, SaveModel, UpdateModel
 from tests.watchers import (
     StubCreateWatcher,

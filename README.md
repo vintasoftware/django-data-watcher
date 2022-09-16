@@ -68,7 +68,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] [F] Have a way of ignoring hooks by param
 -   [x] [F] Should unsaved instance come in all operations
 -   [x] [M] Split decorators.py in a module and reorganzing its typings
--   [ ] [C] Reorganize the imports from root
+-   [x] [C] Reorganize the imports from root
 -   [ ] [F] Create Stubs for decorated models
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers

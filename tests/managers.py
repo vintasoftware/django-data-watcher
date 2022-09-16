@@ -4,7 +4,7 @@ from typing import Any, Dict, Tuple, no_type_check
 
 from django.db.models import Manager, QuerySet
 
-from django_watcher.decorators import watched
+from django_watcher import watched
 
 
 class StubQuerySet(QuerySet):

@@ -2,7 +2,7 @@ from typing import no_type_check
 
 from django.db import models
 
-from django_watcher.decorators import watched
+from django_watcher import watched
 
 from . import watchers
 from .managers import SpyableManager, StubQuerySet, SubSpyableManager  # type: ignore

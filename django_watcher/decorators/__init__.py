@@ -1,5 +1,5 @@
 from importlib import import_module
-from typing import TYPE_CHECKING, Callable, Dict, List, Set, Tuple, Type, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Set, Tuple, Type, TypeVar, Union
 
 from django_watcher.abstract_watcher import AbstractWatcher
 from django_watcher.mixins import (
@@ -14,7 +14,9 @@ from .querytools import set_watched_manager
 
 
 if TYPE_CHECKING:
-    from django.db.models.base import ModelBase  # noqa
+    from .model import WatchedModel  # noqa: F401
+
+    from django.db import models  # noqa: F401
 
 
 def _import_watcher(casual_path: str) -> Type[AbstractWatcher]:
@@ -59,10 +61,13 @@ def _get_watched_operations(
     return list(model_operations), list(objects_operations)
 
 
+T = TypeVar('T', bound='models.Model')
+
+
 def watched(
     watcher: Union[str, Type[AbstractWatcher]],
     watched_managers: List[str] = None,
-) -> Callable:
+) -> Callable[[Type[T]], Type['WatchedModel[T]']]:
     """
     watched decorator, with this you can decorate a model to set a watcher class on it
 
@@ -72,7 +77,7 @@ def watched(
     watched, if not described it will use 'objects' as default
     """
 
-    def decorator(cls: type) -> Type['ModelBase']:
+    def decorator(cls: Type[T]) -> Type['WatchedModel[T]']:
         watcher_cls = _import_watcher(watcher) if isinstance(watcher, str) else watcher
         model_operations, objects_operations = _get_watched_operations(watcher_cls)
         model = set_watched_model(cls, model_operations)

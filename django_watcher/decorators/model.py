@@ -1,8 +1,25 @@
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, List
 
 from django_watcher.abstract_watcher import TargetType
 
 from .helpers import generate_settable, get_watched_functions
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Protocol
+
+    from typing import TypeVar
+
+    from django.db import models
+
+    M = TypeVar('M', bound=models.Model, covariant=True)
+
+    class WatchedModel(Protocol[M]):
+        @classmethod
+        def watched_operation(  # pylint: disable=unused-argument
+            cls, operation: str, target: TargetType, *args: Any, **kwargs: Any
+        ) -> Any:
+            ...
 
 
 def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kwargs: Any) -> Any:

@@ -21,6 +21,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 
 1. copy devcontainer-example.json to devcontainer.json `cp .devcontainer/devcontainer-example.json .devcontainer/devcontainer.json`
 2. click in reopen in container
+3. run poetry install
 
 ### VsCode development (after installation)
 
@@ -51,8 +52,6 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [x] Relational Testing (A model hook call another model with has hooks)
     -   [ ] Test with Heritage
-    -   [ ] Text instance/querytools exclusive hooks
-    -   [ ] Create testing matrix for Django versions
 -   [ ] [C] Docs
     -   [x] Usage
     -   [x] Tutorial
@@ -68,14 +67,14 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [ ] Update Readme (after finishing roadmap)
 -   [x] [F] Have a way of ignoring hooks by param
 -   [x] [F] Should unsaved instance come in all operations
--   [ ] [F] Have instance and queryTools separated hooks
+-   [x] [M] Split decorators.py in a module and reorganzing its typings
 -   [ ] [C] Reorganize the imports from root
 -   [ ] [F] Create Stubs for decorated models
--   [ ] [M] Split decorators.py in a module and reorganzing its typings
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)
+    -   [ ] Create testing matrix for Django versions
 -   [ ] [M] Use `_ignore_hooks` instead of `UNWATCHED_operation`, rename it for `_unwatched_operation` and let only run method ref to it.
 -   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] [F] SoftDeletion Mixin

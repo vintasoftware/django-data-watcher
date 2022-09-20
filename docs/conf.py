@@ -22,8 +22,8 @@
 project = 'django-data-watcher'
 copyright = '2022, Vinta Serviços e Soluções Tecnológicas LTDA'  # noqa
 author = 'Vinta Serviços e Soluções Tecnológicas LTDA'
-version = '1.2.0'
-release = 'beta'
+version = '1.1.0'
+release = ''
 
 
 # -- General configuration ---------------------------------------------------

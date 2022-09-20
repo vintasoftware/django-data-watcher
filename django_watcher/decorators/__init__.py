@@ -67,7 +67,7 @@ T = TypeVar('T', bound='models.Model')
 def watched(
     watcher: Union[str, Type[AbstractWatcher]],
     watched_managers: List[str] = None,
-) -> Callable[[Type[T]], Type['WatchedModel[T]']]:
+) -> Callable[[Type[T]], Type[T]]:
     """
     watched decorator, with this you can decorate a model to set a watcher class on it
 
@@ -77,7 +77,7 @@ def watched(
     watched, if not described it will use 'objects' as default
     """
 
-    def decorator(cls: Type[T]) -> Type['WatchedModel[T]']:
+    def decorator(cls: Type[T]) -> Type[T]:
         watcher_cls = _import_watcher(watcher) if isinstance(watcher, str) else watcher
         model_operations, objects_operations = _get_watched_operations(watcher_cls)
         model = set_watched_model(cls, model_operations)

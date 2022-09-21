@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, Callable, List, Type
 
-from django_watcher.abstract_watcher import TargetType
+from django_watcher.abstract_watcher import AbstractWatcher, TargetType
 
 from .helpers import generate_settable, get_watched_functions
 
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
             ...
 
 
+# pylint: disable=protected-access
 def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kwargs: Any) -> Any:
     """
     _watched_operation is a function to be injected on the Model as classmethod.
@@ -33,14 +34,22 @@ def _watched_operation(cls, operation: str, target: TargetType, *args: Any, **kw
     :param args: Any *args passed to the operation when called
     :param kwargs: Any **kwargs passed to the operation when called
     """
-    # pylint: disable=protected-access
-    return cls._watcher.run(operation, target, *args, **kwargs)
+    return cls._get_watcher().run(operation, target, *args, **kwargs)
 
 
-def set_watched_model(cls: type, watched_operations: List[str]) -> type:
+def _generate_get_watcher(watcher_cls: Type[AbstractWatcher]) -> Callable[[Any], AbstractWatcher]:
+    # pylint: disable=unused-argument
+    def _get_watcher(cls):
+        return watcher_cls()
+
+    return _get_watcher
+
+
+def set_watched_model(cls: type, watcher_cls: type, watched_operations: List[str]) -> type:
     watched_operations = watched_operations.copy()
 
     setattr(cls, 'watched_operation', classmethod(_watched_operation))
+    setattr(cls, '_get_watcher', classmethod(_generate_get_watcher(watcher_cls)))
 
     for func in get_watched_functions(cls, watched_operations):
         setattr(cls, f'UNWATCHED_{func.__name__}', func)

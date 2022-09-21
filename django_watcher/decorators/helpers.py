@@ -66,7 +66,7 @@ def generate_settable(
             return getattr(self.get_queryset(), operation)(*args, **kwargs)
 
         call_watched_operation.__name__ = operation
-        call_watched_operation.__doc__ = getattr(cls(), f'UNWATCHED_{operation}').__doc__
+        # call_watched_operation.__doc__ = getattr(cls(), f'UNWATCHED_{operation}').__doc__
 
         setattr(cls, operation, call_watched_operation)
 

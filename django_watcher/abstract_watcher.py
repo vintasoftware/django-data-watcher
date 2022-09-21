@@ -25,7 +25,7 @@ class AbstractWatcher:
         return target
 
     @classmethod
-    @transaction.atomic(durable=True)
+    @transaction.atomic
     def _run_inside_transaction(
         cls, func: Callable, target: TargetType, *args: Any, **kwargs: Any
     ) -> Any:

@@ -75,6 +75,9 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [ ] [P] Remove Django dependencies
 -   [ ] [D] [F] Use tox (GH actions is as good as we need?)
     -   [ ] Create testing matrix for Django versions
+-   [ ] [B] Fix generate_settable Doc
+-   [ ] [B] Verify if the transaction should be durable
+-   [ ] [F] Set MetaParams as model
 -   [ ] [M] Use `_ignore_hooks` instead of `UNWATCHED_operation`, rename it for `_unwatched_operation` and let only run method ref to it.
 -   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] [F] SoftDeletion Mixin

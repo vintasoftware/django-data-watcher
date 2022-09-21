@@ -80,8 +80,7 @@ def watched(
     def decorator(cls: Type[T]) -> Type[T]:
         watcher_cls = _import_watcher(watcher) if isinstance(watcher, str) else watcher
         model_operations, objects_operations = _get_watched_operations(watcher_cls)
-        model = set_watched_model(cls, model_operations)
-        setattr(model, '_watcher', watcher_cls)
+        model = set_watched_model(cls, watcher_cls, model_operations)
 
         if not watched_managers:
             set_watched_manager(model, 'objects', objects_operations)

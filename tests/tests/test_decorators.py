@@ -27,15 +27,15 @@ class ImportWatcherTests(TestCase):
         model = StringWatcherModel()
         model2 = StringWatcherModel2()
 
-        self.assertEqual(getattr(model, '_watcher'), StubCreateWatcher)
-        self.assertEqual(getattr(model2, '_watcher'), StubDeleteWatcher)
+        self.assertTrue(isinstance(getattr(model, '_get_watcher')(), StubCreateWatcher))
+        self.assertTrue(isinstance(getattr(model2, '_get_watcher')(), StubDeleteWatcher))
 
     def test_casual_path_import(self):
         model = CasualStringWatcherModel()
         model2 = CasualStringWatcherModel2()
 
-        self.assertEqual(getattr(model, '_watcher'), StubCreateWatcher)
-        self.assertEqual(getattr(model2, '_watcher'), StubDeleteWatcher)
+        self.assertTrue(isinstance(getattr(model, '_get_watcher')(), StubCreateWatcher))
+        self.assertTrue(isinstance(getattr(model2, '_get_watcher')(), StubDeleteWatcher))
 
 
 class CustomAndSubManagerTests(TestCase):

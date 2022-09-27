@@ -83,12 +83,22 @@ def _get_watched_manager_cls(manager: 'models.Manager', watched_operations: List
     return manager_cls
 
 
-def set_watched_manager(model: type, manager_attr: str, watched_operations: List[str]) -> None:
-    manager = getattr(model, manager_attr)
-    manager_cls = _get_watched_manager_cls(manager, watched_operations)
+def set_watched_manager(model_cls: type, manager_attr: str, watched_operations: List[str]) -> None:
+
+    original_manager = getattr(model_cls, manager_attr)
+    manager_cls = _get_watched_manager_cls(original_manager, watched_operations)
     manager = manager_cls()
+    manager.name = manager_attr
+    manager.model = model_cls
 
     if manager_attr == 'objects':
         setattr(manager, 'use_for_related_fields', True)
 
-    setattr(model, manager_attr, manager)
+    setattr(model_cls, manager_attr, manager)
+    model_cls._meta.add_manager(manager)  # type: ignore
+
+    # if 'SpyableManager' in str(manager_cls) or 'SubSpyableManager' in str(manager_cls):
+    #     import pdb
+
+    #     pdb.set_trace()
+    # manager.contribute_to_class(model_cls, manager_attr)

@@ -55,57 +55,49 @@ class CreateWatcherMixin(AbstractWatcher):
     CreateWatcherMixin is a DataWatcher for create operations
     Implement the methods you need choosing one or more of the following
 
-    @classmethod
-    def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
+    def pre_create(self, target: List[Model], meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def post_create(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
     """
 
-    @classmethod
-    def pre_create(cls, target: List['S'], meta_params: MetaParams) -> None:
+    def pre_create(self, target: List['S'], meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def post_create(self, target: models.QuerySet, meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def _watched_create(cls, target: 'WatchedCreateQuerySet', *_, **kwargs) -> 'S':
+    def _watched_create(self, target: 'WatchedCreateQuerySet', *_, hooks_params, **kwargs) -> 'S':
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
-        if cls.is_overriden('pre_create'):
+        if self.is_overriden('pre_create'):
             instance = target.model(**kwargs)
-            cls.pre_create([instance], meta_params)
+            self.pre_create([instance], meta_params, **hooks_params)
         instance = target.UNWATCHED_create(**kwargs)
-        if cls.is_overriden('post_create'):
-            cls.post_create(cls.to_queryset(instance), meta_params)
+        if self.is_overriden('post_create'):
+            self.post_create(self.to_queryset(instance), meta_params, **hooks_params)
         return instance
 
-    @classmethod
-    def _create(cls, target: 'WatchedCreateQuerySet', *args, **kwargs) -> 'S':
-        return cls._run_inside_transaction(cls._watched_create, target, *args, **kwargs)
+    def _create(self, target: 'WatchedCreateQuerySet', *args, **kwargs) -> 'S':
+        return self._run_inside_transaction(self._watched_create, target, *args, **kwargs)
 
-    @classmethod
-    def _watched_save(cls, target: 'S', **kwargs) -> None:
+    def _watched_save(self, target: 'S', *_, hooks_params, **kwargs) -> None:
         meta_params: MetaParams = {
             'source': _INSTANCE,
             'operation_params': kwargs,
             'instance_ref': target,
         }
 
-        cls.pre_create([target], meta_params)
+        self.pre_create([target], meta_params, **hooks_params)
         target.UNWATCHED_save(**kwargs)
-        if cls.is_overriden('post_create'):
-            cls.post_create(cls.to_queryset(target), meta_params)
+        if self.is_overriden('post_create'):
+            self.post_create(self.to_queryset(target), meta_params, **hooks_params)
 
-    @classmethod
-    def _save(cls, target: 'S', **kwargs) -> None:
+    def _save(self, target: 'S', **kwargs) -> None:
         create = not target.pk
         if create:
-            cls._run_inside_transaction(cls._watched_save, target, **kwargs)
+            self._run_inside_transaction(self._watched_save, target, **kwargs)
         else:
             target.UNWATCHED_save(**kwargs)
 
@@ -115,33 +107,30 @@ class DeleteWatcherMixin(AbstractWatcher):
     DeleteWatcherMixin is a DataWatcher for delete operations
     Implement the methods you need choosing one or more of the following
 
-    @classmethod
-    def pre_delete(cls, target: models.QuerySet) -> None
+    def pre_delete(self, target: models.QuerySet) -> None
         ...
 
-    @classmethod
-    def post_delete(cls, undeleted_instances: List[Model]) -> None
+    def post_delete(self, undeleted_instances: List[Model]) -> None
         ...
     """
 
-    @classmethod
-    def pre_delete(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def pre_delete(self, target: models.QuerySet, meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def post_delete(cls, undeleted_instances: List['D'], meta_params: MetaParams) -> None:
+    def post_delete(
+        self, undeleted_instances: List['D'], meta_params: MetaParams, **hooks_params
+    ) -> None:
         pass
 
-    @classmethod
     def _watched_delete(
-        cls, target: 'TargetDelete', *args: Any, **kwargs: Any
+        self, target: 'TargetDelete', *args: Any, hooks_params, **kwargs: Any
     ) -> Tuple[int, Dict[str, int]]:
         meta_params: MetaParams = (
             {
                 'source': _QUERY_SET,
                 'operation_params': kwargs,
             }
-            if cls.is_queryset(target)
+            if self.is_queryset(target)
             else {
                 'source': _INSTANCE,
                 'operation_params': kwargs,
@@ -149,17 +138,16 @@ class DeleteWatcherMixin(AbstractWatcher):
             }
         )
 
-        cls.pre_delete(cls.to_queryset(target), meta_params)
-        instances = list(cls.to_queryset(target)) if cls.is_overriden('post_delete') else []
+        self.pre_delete(self.to_queryset(target), meta_params, **hooks_params)
+        instances = list(self.to_queryset(target)) if self.is_overriden('post_delete') else []
         res = target.UNWATCHED_delete(*args, **kwargs)
-        cls.post_delete(instances, meta_params)
+        self.post_delete(instances, meta_params, **hooks_params)
         return res
 
-    @classmethod
     def _delete(
-        cls, target: 'TargetDelete', *args: Any, **kwargs: Any
+        self, target: 'TargetDelete', *args: Any, **kwargs: Any
     ) -> Tuple[int, Dict[str, int]]:
-        return cls._run_inside_transaction(cls._watched_delete, target, *args, **kwargs)
+        return self._run_inside_transaction(self._watched_delete, target, *args, **kwargs)
 
 
 class UpdateWatcherMixin(AbstractWatcher):
@@ -167,55 +155,49 @@ class UpdateWatcherMixin(AbstractWatcher):
     UpdateWatcherMixin is a DataWatcher for update operations
     Implement the methods you need, choosing one or more of the following
 
-    @classmethod
-    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def pre_update(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def post_update(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
     """
 
-    @classmethod
-    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def pre_update(self, target: models.QuerySet, meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def post_update(self, target: models.QuerySet, meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def _watched_update(cls, target: 'WatchedUpdateQuerySet', *args, **kwargs) -> int:
+    def _watched_update(
+        self, target: 'WatchedUpdateQuerySet', *args, hooks_params, **kwargs
+    ) -> int:
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
-        cls.pre_update(target, meta_params)
+        self.pre_update(target, meta_params, **hooks_params)
         result = target.UNWATCHED_update(*args, **kwargs)
-        cls.post_update(target, meta_params)
+        self.post_update(target, meta_params, **hooks_params)
         return result
 
-    @classmethod
-    def _update(cls, target: 'WatchedUpdateQuerySet', *update_args, **kwargs) -> int:
-        return cls._run_inside_transaction(cls._watched_update, target, *update_args, **kwargs)
+    def _update(self, target: 'WatchedUpdateQuerySet', *update_args, **kwargs) -> int:
+        return self._run_inside_transaction(self._watched_update, target, *update_args, **kwargs)
 
-    @classmethod
-    def _watched_save(cls, target: 'S', **kwargs) -> None:
+    def _watched_save(self, target: 'S', *_, hooks_params, **kwargs) -> None:
         meta_params: MetaParams = {
             'source': _INSTANCE,
             'operation_params': kwargs,
             'instance_ref': target,
         }
 
-        if cls.is_overriden('pre_update'):
-            cls.pre_update(cls.to_queryset(target), meta_params)
+        if self.is_overriden('pre_update'):
+            self.pre_update(self.to_queryset(target), meta_params, **hooks_params)
         target.UNWATCHED_save(**kwargs)
-        if cls.is_overriden('post_update'):
-            cls.post_update(cls.to_queryset(target), meta_params)
+        if self.is_overriden('post_update'):
+            self.post_update(self.to_queryset(target), meta_params, **hooks_params)
 
-    @classmethod
-    def _save(cls, target: 'S', **kwargs) -> None:
+    def _save(self, target: 'S', **kwargs) -> None:
         update = bool(target.pk)
         if update:
-            cls._run_inside_transaction(cls._watched_save, target, **kwargs)
+            self._run_inside_transaction(self._watched_save, target, **kwargs)
         else:
             target.UNWATCHED_save(**kwargs)
 
@@ -228,41 +210,34 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
 
     Implement the methods you need choosing one or more of the following
 
-    @classmethod
-    def pre_create(cls, target: List[Model], meta_params: MetaParams) -> None
+    def pre_create(self, target: List[Model], meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def post_create(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def post_create(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def pre_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def pre_update(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def post_update(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def post_update(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def pre_save(cls, target: Union[List[Model], models.QuerySet], meta_params: MetaParams) -> None
+    def pre_save(self, target: Union[List[Model], models.QuerySet], meta_params: MetaParams) -> None
         ...
 
-    @classmethod
-    def post_save(cls, target: models.QuerySet, meta_params: MetaParams) -> None
+    def post_save(self, target: models.QuerySet, meta_params: MetaParams) -> None
         ...
     """
 
-    @classmethod
-    def pre_save(cls, target: Union[List['S'], models.QuerySet], meta_params: MetaParams) -> None:
+    def pre_save(
+        self, target: Union[List['S'], models.QuerySet], meta_params: MetaParams, **hooks_params
+    ) -> None:
         pass
 
-    @classmethod
-    def post_save(cls, target: models.QuerySet, meta_params: MetaParams) -> None:
+    def post_save(self, target: models.QuerySet, meta_params: MetaParams, **hooks_params) -> None:
         pass
 
-    @classmethod
-    def _watched_save(cls, target: 'S', **kwargs) -> None:
+    def _watched_save(self, target: 'S', *_, hooks_params, **kwargs) -> None:
         create = not target.pk
 
         meta_params: MetaParams = {
@@ -272,41 +247,42 @@ class SaveWatcherMixin(CreateWatcherMixin, UpdateWatcherMixin):
         }
 
         if create:
-            cls.pre_save([target], meta_params)
-            cls.pre_create([target], meta_params)
+            self.pre_save([target], meta_params, **hooks_params)
+            self.pre_create([target], meta_params, **hooks_params)
         else:
-            qs = cls.to_queryset(target)
-            cls.pre_save(qs, meta_params)
-            cls.pre_update(qs, meta_params)
+            qs = self.to_queryset(target)
+            self.pre_save(qs, meta_params, **hooks_params)
+            self.pre_update(qs, meta_params, **hooks_params)
 
         target.UNWATCHED_save(**kwargs)
 
-        qs = cls.to_queryset(target)
+        qs = self.to_queryset(target)
         if create:
-            cls.post_create(qs, meta_params)
+            self.post_create(qs, meta_params, **hooks_params)
         else:
-            cls.post_update(qs, meta_params)
+            self.post_update(qs, meta_params, **hooks_params)
 
-        cls.post_save(qs, meta_params)
+        self.post_save(qs, meta_params, **hooks_params)
 
-    @classmethod
-    def _save(cls, target: 'S', **kwargs) -> None:
-        cls._run_inside_transaction(cls._watched_save, target, **kwargs)
+    def _save(self, target: 'S', **kwargs) -> None:
+        self._run_inside_transaction(self._watched_save, target, **kwargs)
 
-    @classmethod
-    def _watched_create(cls, target: 'WatchedCreateQuerySet', *_, **kwargs) -> 'S':
+    def _watched_create(self, target: 'WatchedCreateQuerySet', *_, hooks_params, **kwargs) -> 'S':
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
-        cls.pre_save([target.model(**kwargs)], meta_params)
-        instance: 'WatchedSaveModel' = super()._watched_create(target, **kwargs)
-        cls.post_save(cls.to_queryset(instance), meta_params)
+        self.pre_save([target.model(**kwargs)], meta_params, **hooks_params)
+        instance: 'WatchedSaveModel' = super()._watched_create(
+            target, hooks_params=hooks_params, **kwargs
+        )
+        self.post_save(self.to_queryset(instance), meta_params, **hooks_params)
         return instance  # type: ignore
 
-    @classmethod
-    def _watched_update(cls, target: 'WatchedUpdateQuerySet', *args, **kwargs) -> int:
+    def _watched_update(
+        self, target: 'WatchedUpdateQuerySet', *args, hooks_params, **kwargs
+    ) -> int:
         meta_params: MetaParams = {'source': _QUERY_SET, 'operation_params': kwargs}
 
-        cls.pre_save(target, meta_params)
-        res = super()._watched_update(target, *args, **kwargs)
-        cls.post_save(target, meta_params)
+        self.pre_save(target, meta_params, **hooks_params)
+        res = super()._watched_update(target, *args, hooks_params=hooks_params, **kwargs)
+        self.post_save(target, meta_params, **hooks_params)
         return res

@@ -12,38 +12,39 @@ class AbstractWatcher:
     class Meta:
         abstract = True
 
-    @staticmethod
-    def is_queryset(target: TargetType) -> bool:
+    def is_queryset(self, target: TargetType) -> bool:
         return isinstance(target, models.QuerySet)
 
-    @classmethod
-    def to_queryset(cls, target: TargetType) -> models.QuerySet:
-        if not cls.is_queryset(target):
+    def to_queryset(self, target: TargetType) -> models.QuerySet:
+        if not self.is_queryset(target):
             target = cast(models.Model, target)
             target = target.__class__.objects.filter(pk=target.pk)
 
         return target
 
-    @classmethod
     @transaction.atomic
     def _run_inside_transaction(
-        cls, func: Callable, target: TargetType, *args: Any, **kwargs: Any
+        self, func: Callable, target: TargetType, *args: Any, **kwargs: Any
     ) -> Any:
-        return func(target, *args, **kwargs)
+        hooks_params = {}
+        keys = list(kwargs.keys())
+        for k in keys:
+            if k.startswith('hooks__') and len(k) > 7:
+                hooks_params[k[7:]] = kwargs.pop(k)
+        return func(target, *args, hooks_params=hooks_params, **kwargs)
 
-    @classmethod
     def run(
-        cls, operation: str, target: TargetType, *args: Any, _ignore_hooks=False, **kwargs: Any
+        self, operation: str, target: TargetType, *args: Any, _ignore_hooks=False, **kwargs: Any
     ):
         if _ignore_hooks:
             return getattr(target, f'UNWATCHED_{operation}')(*args, **kwargs)
-        return getattr(cls, f'_{operation}')(target, *args, **kwargs)
+        return getattr(self, f'_{operation}')(target, *args, **kwargs)
 
-    @classmethod
-    def is_overriden(cls, method_name: str) -> bool:
+    def is_overriden(self, method_name: str) -> bool:
+        cls = type(self)
         classes = inspect.getmro(cls)[1:]
         return any(
             hasattr(klass, method_name)
-            and not getattr(klass, method_name).__code__ is getattr(cls, method_name).__code__
+            and not getattr(klass, method_name).__code__ is getattr(self, method_name).__code__
             for klass in classes
         )

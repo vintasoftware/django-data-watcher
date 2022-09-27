@@ -51,6 +51,8 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] test decorators
     -   [x] test mixins [Create, Delete, Update, Save, Union of Save and Delete]
     -   [x] Relational Testing (A model hook call another model with has hooks)
+    -   [ ] Hooks params
+    -   [ ] Be sure to manager have the model
     -   [ ] Test with Heritage
 -   [ ] [C] Docs
     -   [x] Usage
@@ -58,9 +60,10 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] Installation
     -   [x] Badge
     -   [x] Fix theme
-    -   [ ] Fix Dynamic Version
     -   [ ] Docstrings on the code
+    -   [ ] Hooks params
     -   [ ] How to Ignore a Hook
+    -   [ ] Fix Dynamic Version
     -   [ ] Query and Instance hooks
     -   [ ] How does it help? Bond or Arch?
     -   [ ] Redefine docs sections
@@ -70,6 +73,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [x] [M] Split decorators.py in a module and reorganzing its typings
 -   [x] [C] Reorganize the imports from root
 -   [x] [F] Create Stubs for decorated models
+-   [x] [F] Hooks Params
 -   [ ] [F] Implement for bulk operations on qs (bulk_create and bulk_update)
 -   [ ] [P] Remove is_overriden func, documment what is needed to be overriden on watchers
 -   [ ] [P] Remove Django dependencies

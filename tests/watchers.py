@@ -30,7 +30,7 @@ class WatchInspector(AbstractWatcher):
         return (
             True
             if method_name in cls.overriden_hooks
-            else super().is_overriden(method_name)  # noqa
+            else super().is_overriden(cls(), method_name)  # noqa
         )
 
 
@@ -59,8 +59,7 @@ class StubSaveDeleteWatcher2(WatchInspector, SaveWatcherMixin, DeleteWatcherMixi
 
 
 class DeleteWatcher(DeleteWatcherMixin):
-    @classmethod
-    def post_delete(cls, undeleted_instances, meta_params) -> None:
+    def post_delete(self, undeleted_instances, meta_params, **hooks_params) -> None:
         from tests.models import RelationDeleteModel2  # noqa
 
         for i in undeleted_instances:
@@ -68,6 +67,5 @@ class DeleteWatcher(DeleteWatcherMixin):
 
 
 class DeleteWatcher2(DeleteWatcherMixin):
-    @classmethod
-    def post_delete(cls, undeleted_instances, meta_params) -> None:
+    def post_delete(self, undeleted_instances, meta_params, **hooks_params) -> None:
         raise Exception

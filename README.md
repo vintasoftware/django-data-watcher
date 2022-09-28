@@ -62,7 +62,7 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
     -   [x] Fix theme
     -   [ ] Docstrings on the code
     -   [ ] Hooks params
-    -   [ ] How to Ignore a Hook
+    -   [ ] How to Ignore the Hooks
     -   [ ] Fix Dynamic Version
     -   [ ] Query and Instance hooks
     -   [ ] How does it help? Bond or Arch?
@@ -83,8 +83,9 @@ Django Data Watcher is a library that will make easier to create/mantain side-ef
 -   [ ] [B] Verify if the transaction should be durable
 -   [ ] [F] Set MetaParams as model
 -   [ ] [M] Use `_ignore_hooks` instead of `UNWATCHED_operation`, rename it for `_unwatched_operation` and let only run method ref to it.
--   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should de watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
+-   [ ] [P] Better manage QueryTools - Memory management of numerous qs. Should the watcher decorator always create a new QT, try to reuse it and solve or skip conflicts. (test decorators specified cases in this file.)
 -   [ ] [F] SoftDeletion Mixin
--   [ ] [M] `_generate_settable_for_manager`, `_generate_settable_for_qs`, and `_generate_settable_for_model` should be the same function, and fix typing
+-   [x] [M] `_generate_settable_for_manager`, `_generate_settable_for_qs`, and `_generate_settable_for_model` should be the same function, and fix typing
+-   [ ] [M] Use [from_queryset and contribute_to_class](https://github.com/django/django/blob/653a7bd7b7c2f7c3ffe6b22be53da1472c491474/django/db/models/manager.py#L103-L118) to generate the manager and associate it with the model
 -   [ ] Application Example also comparing with Django signals
 -   [ ] Talk

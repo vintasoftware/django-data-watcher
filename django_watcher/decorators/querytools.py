@@ -75,7 +75,7 @@ def _get_watched_manager_cls(manager: 'models.Manager', watched_operations: List
         )
 
     new_qs_instance = _clone_queryset_in_new_cls(qs, qs_cls)
-    setattr(manager_cls, 'get_queryset', lambda self: new_qs_instance)
+    setattr(manager_cls, 'get_queryset', lambda self: new_qs_instance.all())
 
     settable = generate_settable(manager_cls, 'manager')
     for operation in watched_operations_copy:
